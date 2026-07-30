@@ -40,7 +40,7 @@ class _AppShellState extends State<AppShell> {
 
   @override
   Widget build(BuildContext context) {
-    final compact = MediaQuery.sizeOf(context).width < 980;
+    final compact = MediaQuery.sizeOf(context).width < 1100;
     final period = EnergyScope.of(context).period;
 
     return Scaffold(

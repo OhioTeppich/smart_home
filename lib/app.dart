@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'core/theme/app_theme.dart';
+import 'app/app_scale.dart';
 import 'app/shell/app_shell.dart';
 import 'features/energy/application/energy_dashboard_controller.dart';
 import 'features/energy/infrastructure/repositories/in_memory_energy_repository.dart';
@@ -19,6 +20,8 @@ class SmartHomeApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       scrollBehavior: const SmartHomeScrollBehavior(),
       theme: AppTheme.light,
+      builder: (context, child) =>
+          AppScale(scale: 1.12, child: child ?? const SizedBox.shrink()),
       home: EnergyScope(
         controller: EnergyDashboardController(const InMemoryEnergyRepository()),
         child: SmartHomeScope(
