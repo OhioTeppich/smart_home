@@ -12,7 +12,7 @@ Smart Home ist eine Flutter-Anwendung für die Übersicht und Steuerung eines Sm
 
 ## Arbeitsweise für KI-Agenten
 
-1. Vor Änderungen zuerst den bestehenden Code, die betroffenen Tests und die relevante Dokumentation lesen.
+1. Vor Änderungen zuerst den bestehenden Code, die betroffenen Tests und die relevante Dokumentation lesen. Für einen schnellen Architekturüberblick zuerst `graphify-out/GRAPH_REPORT.md` lesen bzw. `graphify query "<Frage>"` ausführen, falls `graphify-out/` vorhanden ist, statt den gesamten Code manuell zu durchsuchen.
 2. Änderungen klein und fachlich fokussiert halten.
 3. Bestehende Funktionalität und öffentliche Schnittstellen nicht ohne ausdrücklichen Auftrag ändern.
 4. Keine Secrets, Tokens, lokalen SDK-Pfade oder Gerätekonfigurationen committen.
@@ -24,6 +24,8 @@ Smart Home ist eine Flutter-Anwendung für die Übersicht und Steuerung eines Sm
 ## Architektur
 
 Die verbindlichen Architekturregeln stehen in [ARCHITECTURE.md](ARCHITECTURE.md).
+
+Zusätzlich existiert ein automatisch gepflegter Wissensgraph in `graphify-out/` (Nodes, Kanten, Community-Struktur des gesamten Repos). Ein Git-Post-Commit-Hook aktualisiert `graph.json` nach jedem Commit automatisch für geänderte Code-Dateien; bei Doku-/Bild-Änderungen `graphify --update` manuell ausführen. Nicht selbst pflegen oder manuell umschreiben.
 
 Grundregeln:
 
