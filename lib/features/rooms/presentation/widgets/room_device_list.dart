@@ -1,24 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/theme/app_theme.dart';
-import '../../application/controllers/smart_home_controller.dart';
+import '../../application/smart_home_bloc.dart';
+import '../../application/smart_home_event.dart';
+import '../../application/smart_home_state.dart';
 import '../../domain/entities/smart_home_device.dart';
 import 'smart_home_device_ui.dart';
 
 class RoomDeviceList extends StatelessWidget {
   const RoomDeviceList({
-    required this.controller,
+    required this.state,
     required this.roomId,
     required this.roomName,
     super.key,
   });
-  final SmartHomeController controller;
+  final SmartHomeConnected state;
   final String roomId;
   final String roomName;
 
   @override
   Widget build(BuildContext context) {
-    final devices = controller.devicesFor(roomId);
+    final devices = state.devicesFor(roomId);
     return Container(
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
@@ -83,10 +86,8 @@ class RoomDeviceList extends StatelessWidget {
                       return DeviceListItem(
                         device: device,
                         onToggle: device.canToggle
-                            ? (value) => controller.toggleDevice(
-                                device.id,
-                                value,
-                                roomId: roomId,
+                            ? (value) => context.read<SmartHomeBloc>().add(
+                                SmartHomeDeviceToggled(device.id, value),
                               )
                             : null,
                       );

@@ -1,79 +1,86 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/theme/app_theme.dart';
-import '../../application/controllers/smart_home_controller.dart';
+import '../../application/smart_home_bloc.dart';
+import '../../application/smart_home_event.dart';
+import '../../application/smart_home_state.dart';
 import '../../domain/entities/smart_home_device.dart';
-import '../state/smart_home_scope.dart';
 import 'room_dialogs.dart';
 import 'smart_home_device_ui.dart';
 
 class RoomMap extends StatelessWidget {
   const RoomMap({
-    required this.controller,
+    required this.state,
     required this.roomId,
     required this.roomName,
     this.imageAsset,
     super.key,
   });
-  final SmartHomeController controller;
+  final SmartHomeConnected state;
   final String roomId;
   final String roomName;
   final String? imageAsset;
 
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(22),
-    decoration: BoxDecoration(
-      color: Colors.white.withOpacity(.57),
-      borderRadius: BorderRadius.circular(22),
-      border: Border.all(color: Colors.white.withOpacity(.78)),
-    ),
-    child: LayoutBuilder(
-      builder: (context, constraints) {
-        final width = constraints.maxWidth;
-        final height = width / 1.5;
-        return SizedBox(
-          width: width,
-          height: height,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                if (imageAsset != null)
-                  Image.asset(imageAsset!, fit: BoxFit.cover)
-                else
-                  RoomPlaceholder(roomName: roomName),
-                if (controller.isPlacing)
-                  GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTapUp: (details) => controller.placePending(
-                      details.localPosition.dx / width,
-                      details.localPosition.dy / height,
-                    ),
-                    child: Container(
-                      color: AppColors.blueDark.withOpacity(.08),
-                    ),
-                  ),
-                if (controller.devicesFor(roomId).isEmpty &&
-                    !controller.isPlacing)
-                  const Center(child: EmptyMapHint()),
-                ...controller
-                    .devicesFor(roomId)
-                    .map(
-                      (device) => Positioned(
-                        left: device.x! * width - 24,
-                        top: device.y! * height - 24,
-                        child: DeviceMarker(device: device, roomId: roomId),
+  Widget build(BuildContext context) {
+    final placedDevices = state
+        .devicesFor(roomId)
+        .where((device) => device.isPlaced)
+        .toList();
+    return Container(
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(.57),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: Colors.white.withOpacity(.78)),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final width = constraints.maxWidth;
+          final height = width / 1.5;
+          return SizedBox(
+            width: width,
+            height: height,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  if (imageAsset != null)
+                    Image.asset(imageAsset!, fit: BoxFit.cover)
+                  else
+                    RoomPlaceholder(roomName: roomName),
+                  if (state.isPlacing)
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTapUp: (details) => context.read<SmartHomeBloc>().add(
+                        SmartHomePlacementConfirmed(
+                          details.localPosition.dx / width,
+                          details.localPosition.dy / height,
+                        ),
+                      ),
+                      child: Container(
+                        color: AppColors.blueDark.withOpacity(.08),
                       ),
                     ),
-              ],
+                  if (placedDevices.isEmpty && !state.isPlacing)
+                    const Center(child: EmptyMapHint()),
+                  ...placedDevices.map(
+                    (device) => Positioned(
+                      left: device.x! * width - 24,
+                      top: device.y! * height - 24,
+                      child: DeviceMarker(device: device, roomId: roomId),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        );
-      },
-    ),
-  );
+          );
+        },
+      ),
+    );
+  }
 }
 
 class RoomPlaceholder extends StatelessWidget {
@@ -199,7 +206,6 @@ class _DeviceMarkerState extends State<DeviceMarker> {
                       context: context,
                       builder: (_) => DeviceInfoDialog(
                         device: device,
-                        controller: SmartHomeScope.of(context),
                         roomId: widget.roomId,
                       ),
                     ),

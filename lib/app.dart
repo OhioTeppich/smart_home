@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'core/theme/app_theme.dart';
 import 'app/app_scale.dart';
 import 'app/shell/app_shell.dart';
 import 'features/energy/application/energy_dashboard_controller.dart';
 import 'features/energy/infrastructure/repositories/in_memory_energy_repository.dart';
-import 'features/rooms/application/controllers/smart_home_controller.dart';
-import 'features/rooms/infrastructure/repositories/in_memory_smart_home_repository.dart';
-import 'features/rooms/presentation/state/smart_home_scope.dart';
+import 'features/ha_connection/application/ha_connection_bloc.dart';
+import 'features/ha_connection/application/ha_connection_event.dart';
+import 'features/ha_connection/application/ha_connection_state.dart';
+import 'features/ha_connection/domain/value_objects/ha_connection_config.dart';
+import 'features/ha_connection/infrastructure/data_sources/ha_connection_local_data_source.dart';
+import 'features/ha_connection/infrastructure/repositories/ha_connection_repository_impl.dart';
+import 'features/rooms/application/smart_home_bloc.dart';
+import 'features/rooms/application/smart_home_event.dart';
+import 'features/rooms/infrastructure/repositories/home_assistant_smart_home_repository.dart';
 import 'features/home/application/home_controller.dart';
 
 class SmartHomeApp extends StatelessWidget {
@@ -15,23 +22,52 @@ class SmartHomeApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Smart Home',
-      debugShowCheckedModeBanner: false,
-      scrollBehavior: const SmartHomeScrollBehavior(),
-      theme: AppTheme.light,
-      builder: (context, child) =>
-          AppScale(scale: 1.12, child: child ?? const SizedBox.shrink()),
-      home: EnergyScope(
-        controller: EnergyDashboardController(const InMemoryEnergyRepository()),
-        child: SmartHomeScope(
-          controller: SmartHomeController(InMemorySmartHomeRepository()),
-          child: HomeScope(
-            controller: HomeController()..start(),
-            child: const AppShell(),
-          ),
-        ),
+    return BlocProvider(
+      create: (context) => HaConnectionBloc(
+        HaConnectionRepositoryImpl(HaConnectionLocalDataSource()),
+      )..add(const HaConnectionStarted()),
+      // `SmartHomeBloc` must live above `MaterialApp`, not inside `home:`.
+      // Dialogs opened with `showDialog` and pages pushed with
+      // `Navigator.push` become sibling routes on the same root Navigator,
+      // not descendants of whatever page opened them — so any provider
+      // placed inside `home:` (like `AppShell`) is invisible to them. Only
+      // providers above the Navigator (i.e. above `MaterialApp`) are seen
+      // by every route.
+      child: BlocBuilder<HaConnectionBloc, HaConnectionState>(
+        buildWhen: (previous, current) => _configOf(previous) != _configOf(current),
+        builder: (context, state) {
+          final config = _configOf(state);
+          return BlocProvider<SmartHomeBloc>(
+            // A changed key makes Flutter tear down the old provider
+            // element (closing the old bloc) and create a fresh one,
+            // rebuilding `SmartHomeBloc` whenever the connection changes.
+            key: ValueKey(config),
+            create: (context) => SmartHomeBloc(
+              HomeAssistantSmartHomeRepository(config: config),
+            )..add(const SmartHomeStarted()),
+            child: MaterialApp(
+              title: 'Smart Home',
+              debugShowCheckedModeBanner: false,
+              scrollBehavior: const SmartHomeScrollBehavior(),
+              theme: AppTheme.light,
+              builder: (context, child) =>
+                  AppScale(scale: 1.12, child: child ?? const SizedBox.shrink()),
+              home: EnergyScope(
+                controller: EnergyDashboardController(
+                  const InMemoryEnergyRepository(),
+                ),
+                child: HomeScope(
+                  controller: HomeController()..start(),
+                  child: const AppShell(),
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
+
+  HaConnectionConfig? _configOf(HaConnectionState state) =>
+      state is HaConnectionReady ? state.savedConfig : null;
 }

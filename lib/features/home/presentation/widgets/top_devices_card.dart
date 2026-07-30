@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../rooms/application/smart_home_bloc.dart';
+import '../../../rooms/application/smart_home_state.dart';
 import '../../../rooms/domain/entities/smart_home_device.dart';
-import '../../../rooms/presentation/state/smart_home_scope.dart';
 import '../../application/home_controller.dart';
 import 'home_card.dart';
 
@@ -13,6 +15,8 @@ extension _HomeDeviceStyle on SmartHomeDeviceType {
         SmartHomeDeviceType.television => Icons.tv_rounded,
         SmartHomeDeviceType.plug => Icons.power_rounded,
         SmartHomeDeviceType.sensor => Icons.sensors_rounded,
+        SmartHomeDeviceType.climate => Icons.thermostat_rounded,
+        SmartHomeDeviceType.cover => Icons.blinds_rounded,
         SmartHomeDeviceType.other => Icons.devices_other_rounded,
       };
 
@@ -22,6 +26,8 @@ extension _HomeDeviceStyle on SmartHomeDeviceType {
         SmartHomeDeviceType.television => const Color(0xFFCFC8DA),
         SmartHomeDeviceType.plug => const Color(0xFFAECBD1),
         SmartHomeDeviceType.sensor => const Color(0xFF8BB29A),
+        SmartHomeDeviceType.climate => const Color(0xFFD3AECB),
+        SmartHomeDeviceType.cover => const Color(0xFFB9C2A4),
         SmartHomeDeviceType.other => const Color(0xFFD8D8D8),
       };
 }
@@ -32,7 +38,11 @@ class TopDevicesCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final overview = HomeScope.of(context);
-    final devices = overview.rankedDevices(SmartHomeScope.of(context).devices);
+    final smartHome = context.watch<SmartHomeBloc>().state;
+    final allDevices = smartHome is SmartHomeConnected
+        ? smartHome.devices
+        : const <SmartHomeDevice>[];
+    final devices = overview.rankedDevices(allDevices);
     return HomeCard(
       child: SizedBox(
         height: 214,

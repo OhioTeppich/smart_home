@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../ha_connection/application/ha_connection_bloc.dart';
+import '../../../ha_connection/application/ha_connection_state.dart';
+import '../../../ha_connection/presentation/pages/ha_connection_settings_page.dart';
+import '../../application/smart_home_bloc.dart';
+import '../../application/smart_home_event.dart';
+import '../../application/smart_home_state.dart';
 import '../../domain/entities/smart_home_device.dart';
-import '../state/smart_home_scope.dart';
 import '../widgets/room_layout.dart';
 
 class RoomPage extends StatelessWidget {
@@ -20,31 +26,106 @@ class RoomPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final compact = MediaQuery.sizeOf(context).width < 700;
-    final controller = SmartHomeScope.of(context);
-    return SingleChildScrollView(
-      padding: EdgeInsets.fromLTRB(
-        compact ? 24 : 44,
-        32,
-        compact ? 24 : 52,
-        42,
+    final connection = context.watch<HaConnectionBloc>().state;
+    final smartHome = context.watch<SmartHomeBloc>().state;
+
+    if (connection is HaConnectionReady && connection.savedConfig == null) {
+      return const _RoomStatusMessage(
+        icon: Icons.link_off_rounded,
+        title: 'Keine Home Assistant-Verbindung',
+        message:
+            'Verbinde die App zuerst über die Einstellungen mit Home Assistant, '
+            'um echte Geräte in diesem Raum zu sehen.',
+        showSettingsAction: true,
+      );
+    }
+
+    return switch (smartHome) {
+      SmartHomeInitial() || SmartHomeLoading() => const _RoomStatusMessage(
+        icon: Icons.hourglass_top_rounded,
+        title: 'Verbindung wird hergestellt',
+        message: 'Geräte werden von Home Assistant geladen …',
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (controller.isPlacing) ...[
-            PlacementBanner(device: controller.pendingDevice!),
-            const SizedBox(height: 12),
+      SmartHomeError(:final message) => _RoomStatusMessage(
+        icon: Icons.cloud_off_rounded,
+        title: 'Verbindung unterbrochen',
+        message: message,
+      ),
+      SmartHomeConnected() => SingleChildScrollView(
+        padding: EdgeInsets.fromLTRB(
+          compact ? 24 : 44,
+          32,
+          compact ? 24 : 52,
+          42,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (smartHome.isPlacing) ...[
+              PlacementBanner(device: smartHome.pendingPlacement!.device),
+              const SizedBox(height: 12),
+            ],
+            RoomLayout(
+              state: smartHome,
+              roomId: roomId,
+              roomName: roomName,
+              imageAsset: imageAsset,
+            ),
           ],
-          RoomLayout(
-            controller: controller,
-            roomId: roomId,
-            roomName: roomName,
-            imageAsset: imageAsset,
+        ),
+      ),
+    };
+  }
+}
+
+class _RoomStatusMessage extends StatelessWidget {
+  const _RoomStatusMessage({
+    required this.icon,
+    required this.title,
+    required this.message,
+    this.showSettingsAction = false,
+  });
+
+  final IconData icon;
+  final String title;
+  final String message;
+  final bool showSettingsAction;
+
+  @override
+  Widget build(BuildContext context) => Center(
+    child: Padding(
+      padding: const EdgeInsets.all(48),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 40, color: AppColors.muted),
+          const SizedBox(height: 16),
+          Text(
+            title,
+            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17),
           ),
+          const SizedBox(height: 8),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: AppColors.muted),
+          ),
+          if (showSettingsAction) ...[
+            const SizedBox(height: 20),
+            FilledButton(
+              onPressed: () => Navigator.of(context).push<void>(
+                MaterialPageRoute(
+                  builder: (_) => const HaConnectionSettingsPage(),
+                ),
+              ),
+              style: FilledButton.styleFrom(backgroundColor: AppColors.ink),
+              child: const Text('Zu den Einstellungen'),
+            ),
+          ],
         ],
       ),
-    );
-  }
+    ),
+  );
 }
 
 class PlacementBanner extends StatelessWidget {
@@ -69,7 +150,9 @@ class PlacementBanner extends StatelessWidget {
           ),
         ),
         TextButton(
-          onPressed: SmartHomeScope.of(context).cancelPlacement,
+          onPressed: () => context.read<SmartHomeBloc>().add(
+            const SmartHomePlacementCancelled(),
+          ),
           child: const Text('Abbrechen'),
         ),
       ],

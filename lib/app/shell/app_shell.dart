@@ -11,10 +11,9 @@ import '../../features/energy/presentation/pages/energy_analysis_page.dart'
 import '../../features/energy/presentation/pages/energy_overview_page.dart'
     as energyOverview;
 import '../../features/energy/presentation/widgets/energy_period_selector.dart';
+import '../../features/ha_connection/presentation/pages/ha_connection_settings_page.dart';
 import '../../features/home/presentation/pages/home_page.dart' as home;
-import '../../features/rooms/domain/entities/smart_home_device.dart';
 import '../../features/rooms/presentation/pages/room_page.dart';
-import '../../features/rooms/presentation/state/smart_home_scope.dart';
 import '../../features/rooms/presentation/widgets/room_dialogs.dart';
 
 enum AppSection {
@@ -75,6 +74,7 @@ class _AppShellState extends State<AppShell> {
               compact: compact,
               onSectionChanged: (value) => setState(() => section = value),
               trailing: _buildNavigationTrailing(period, compact),
+              onOpenSettings: _openHaConnectionSettings,
             ),
           ),
         ],
@@ -132,16 +132,17 @@ class _AppShellState extends State<AppShell> {
     ),
   };
 
-  Future<void> _addDeviceToCurrentRoom() async {
-    final device = await showDialog<SmartHomeDevice>(
-      context: context,
-      builder: (_) => const AddDeviceDialog(),
+  void _openHaConnectionSettings() {
+    Navigator.of(context).push<void>(
+      MaterialPageRoute(builder: (_) => const HaConnectionSettingsPage()),
     );
-    if (device != null && mounted) {
-      SmartHomeScope.of(
-        context,
-      ).startPlacement(device, roomId: _roomId(section));
-    }
+  }
+
+  Future<void> _addDeviceToCurrentRoom() async {
+    await showDialog<void>(
+      context: context,
+      builder: (_) => AddDeviceDialog(roomId: _roomId(section)),
+    );
   }
 
   bool _isRoom(AppSection value) =>
@@ -165,6 +166,7 @@ class AppNavigationBar extends StatelessWidget {
     required this.section,
     required this.compact,
     required this.onSectionChanged,
+    required this.onOpenSettings,
     this.trailing,
     super.key,
   });
@@ -172,6 +174,7 @@ class AppNavigationBar extends StatelessWidget {
   final AppSection section;
   final bool compact;
   final ValueChanged<AppSection> onSectionChanged;
+  final VoidCallback onOpenSettings;
   final Widget? trailing;
 
   @override
@@ -231,10 +234,17 @@ class AppNavigationBar extends StatelessWidget {
               ),
               const Spacer(),
               if (trailing != null) ...[
-                Container(width: 1, height: 34, color: AppColors.line),
-                const SizedBox(width: 17),
                 trailing!,
+                const SizedBox(width: 10),
               ],
+              Container(width: 1, height: 34, color: AppColors.line),
+              const SizedBox(width: 10),
+              IconButton(
+                onPressed: onOpenSettings,
+                tooltip: 'Home Assistant-Verbindung',
+                icon: const Icon(Icons.settings_outlined),
+                color: AppColors.muted,
+              ),
             ],
           ),
         ),

@@ -9,6 +9,8 @@ extension SmartHomeDeviceUi on SmartHomeDeviceType {
     SmartHomeDeviceType.television => Icons.tv_rounded,
     SmartHomeDeviceType.plug => Icons.power_rounded,
     SmartHomeDeviceType.sensor => Icons.sensors_rounded,
+    SmartHomeDeviceType.climate => Icons.thermostat_rounded,
+    SmartHomeDeviceType.cover => Icons.blinds_rounded,
     SmartHomeDeviceType.other => Icons.devices_other_rounded,
   };
 
@@ -18,6 +20,8 @@ extension SmartHomeDeviceUi on SmartHomeDeviceType {
     SmartHomeDeviceType.television => const Color(0xFFCFC8DA),
     SmartHomeDeviceType.plug => const Color(0xFFAECBD1),
     SmartHomeDeviceType.sensor => const Color(0xFF8BB29A),
+    SmartHomeDeviceType.climate => const Color(0xFFD3AECB),
+    SmartHomeDeviceType.cover => const Color(0xFFB9C2A4),
     SmartHomeDeviceType.other => const Color(0xFFD8D8D8),
   };
 }

@@ -1,114 +1,84 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/theme/app_theme.dart';
-import '../../application/controllers/smart_home_controller.dart';
+import '../../application/smart_home_bloc.dart';
+import '../../application/smart_home_event.dart';
+import '../../application/smart_home_state.dart';
 import '../../domain/entities/smart_home_device.dart';
 import 'smart_home_device_ui.dart';
 
-class AddDeviceDialog extends StatefulWidget {
-  const AddDeviceDialog({super.key});
+const _roomLabels = <String, String>{
+  'livingRoom': 'Wohnzimmer',
+  'bedroom': 'Schlafzimmer',
+  'kitchen': 'Küche',
+  'bathroom': 'Bad',
+  'hallway': 'Flur',
+};
+
+/// Devices are never invented by hand anymore — Home Assistant is the only
+/// source of device existence. This dialog just lets the user place an
+/// already-assigned-but-unplaced device from [roomId] onto the room map.
+class AddDeviceDialog extends StatelessWidget {
+  const AddDeviceDialog({required this.roomId, super.key});
+  final String roomId;
+
   @override
-  State<AddDeviceDialog> createState() => _AddDeviceDialogState();
-}
+  Widget build(BuildContext context) {
+    final state = context.watch<SmartHomeBloc>().state;
+    final available = state is SmartHomeConnected
+        ? state.devices
+              .where((device) => device.roomId == roomId && !device.isPlaced)
+              .toList()
+        : const <SmartHomeDevice>[];
 
-class _AddDeviceDialogState extends State<AddDeviceDialog> {
-  SmartHomeDeviceType type = SmartHomeDeviceType.lamp;
-  late final nameController = TextEditingController(text: type.label);
-
-  @override
-  void dispose() {
-    nameController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) => AlertDialog(
-    title: const Text('SmartHome-Gerät hinzufügen'),
-    content: SizedBox(
-      width: 380,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          DropdownButtonFormField<SmartHomeDeviceType>(
-            value: type,
-            decoration: const InputDecoration(labelText: 'Gerätetyp'),
-            items: SmartHomeDeviceType.values
-                .map(
-                  (item) =>
-                      DropdownMenuItem(value: item, child: Text(item.label)),
-                )
-                .toList(),
-            onChanged: (value) => setState(() {
-              type = value!;
-              if (nameController.text.isEmpty ||
-                  SmartHomeDeviceType.values.any(
-                    (item) => item.label == nameController.text,
-                  ))
-                nameController.text = type.label;
-            }),
-          ),
-          const SizedBox(height: 14),
-          TextField(
-            controller: nameController,
-            decoration: const InputDecoration(labelText: 'Name'),
-          ),
-        ],
+    return AlertDialog(
+      title: const Text('Gerät hinzufügen'),
+      content: SizedBox(
+        width: 380,
+        child: available.isEmpty
+            ? const Text(
+                'Keine unplatzierten Geräte für diesen Raum gefunden. Geräte '
+                'werden automatisch aus Home Assistant übernommen, sobald ihr '
+                'Name auf diesen Raum hindeutet, oder lassen sich im '
+                'Geräte-Dialog manuell zuordnen.',
+              )
+            : ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 360),
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  itemCount: available.length,
+                  separatorBuilder: (_, index) => const Divider(height: 1),
+                  itemBuilder: (context, index) {
+                    final device = available[index];
+                    return ListTile(
+                      leading: Icon(device.type.icon, color: device.type.color),
+                      title: Text(device.name),
+                      subtitle: Text(device.type.label),
+                      onTap: () {
+                        context.read<SmartHomeBloc>().add(
+                          SmartHomePlacementStarted(device, roomId),
+                        );
+                        Navigator.pop(context);
+                      },
+                    );
+                  },
+                ),
+              ),
       ),
-    ),
-    actions: [
-      TextButton(
-        onPressed: () => Navigator.pop(context),
-        child: const Text('Abbrechen'),
-      ),
-      FilledButton(
-        onPressed: _submit,
-        child: const Text('Weiter zur Platzierung'),
-      ),
-    ],
-  );
-
-  void _submit() {
-    final name = nameController.text.trim().isEmpty
-        ? type.label
-        : nameController.text.trim();
-    Navigator.pop(
-      context,
-      SmartHomeDevice(
-        id: DateTime.now().microsecondsSinceEpoch.toString(),
-        name: name,
-        type: type,
-        status: 'Online',
-        powerWatts: switch (type) {
-          SmartHomeDeviceType.lamp || SmartHomeDeviceType.bulb => 9,
-          SmartHomeDeviceType.television => 82,
-          SmartHomeDeviceType.plug => 24,
-          SmartHomeDeviceType.sensor => 1,
-          SmartHomeDeviceType.other => 18,
-        },
-        dailyKwh: switch (type) {
-          SmartHomeDeviceType.lamp || SmartHomeDeviceType.bulb => .18,
-          SmartHomeDeviceType.television => .64,
-          SmartHomeDeviceType.plug => .31,
-          SmartHomeDeviceType.sensor => .02,
-          SmartHomeDeviceType.other => .2,
-        },
-        lastUpdated: 'gerade eben',
-        isOn: type != SmartHomeDeviceType.sensor,
-      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Schließen'),
+        ),
+      ],
     );
   }
 }
 
 class DeviceInfoDialog extends StatefulWidget {
-  const DeviceInfoDialog({
-    required this.device,
-    required this.controller,
-    required this.roomId,
-    super.key,
-  });
+  const DeviceInfoDialog({required this.device, required this.roomId, super.key});
   final SmartHomeDevice device;
-  final SmartHomeController controller;
   final String roomId;
   @override
   State<DeviceInfoDialog> createState() => _DeviceInfoDialogState();
@@ -116,6 +86,7 @@ class DeviceInfoDialog extends StatefulWidget {
 
 class _DeviceInfoDialogState extends State<DeviceInfoDialog> {
   late bool isOn = widget.device.isOn;
+  late String? selectedRoomId = widget.device.roomId;
 
   @override
   Widget build(BuildContext context) => AlertDialog(
@@ -137,56 +108,78 @@ class _DeviceInfoDialogState extends State<DeviceInfoDialog> {
         Expanded(child: Text(widget.device.name)),
       ],
     ),
-    content: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        InfoRow(label: 'Gerätetyp', value: widget.device.type.label),
-        InfoRow(label: 'Verbindung', value: widget.device.status),
-        InfoRow(
-          label: 'Aktuelle Leistung',
-          value:
-              '${isOn ? widget.device.powerWatts.toStringAsFixed(0) : '0'} W',
-        ),
-        InfoRow(
-          label: 'Verbrauch heute',
-          value:
-              '${widget.device.dailyKwh.toStringAsFixed(2).replaceAll('.', ',')} kWh',
-        ),
-        InfoRow(
-          label: 'Letzte Aktualisierung',
-          value: isOn == widget.device.isOn
-              ? widget.device.lastUpdated
-              : 'gerade eben',
-        ),
-        const Divider(height: 20),
-        if (widget.device.canToggle)
-          PowerToggleRow(
-            value: isOn,
-            subtitle: isOn
-                ? 'Gerät ist eingeschaltet'
-                : 'Gerät ist ausgeschaltet',
+    content: SizedBox(
+      width: 380,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          InfoRow(label: 'Gerätetyp', value: widget.device.type.label),
+          InfoRow(label: 'Verbindung', value: widget.device.status),
+          InfoRow(
+            label: 'Aktuelle Leistung',
+            value:
+                '${isOn ? widget.device.powerWatts.toStringAsFixed(0) : '0'} W',
+          ),
+          InfoRow(
+            label: 'Verbrauch heute',
+            value:
+                '${widget.device.dailyKwh.toStringAsFixed(2).replaceAll('.', ',')} kWh',
+          ),
+          InfoRow(
+            label: 'Letzte Aktualisierung',
+            value: isOn == widget.device.isOn
+                ? widget.device.lastUpdated
+                : 'gerade eben',
+          ),
+          const Divider(height: 20),
+          DropdownButtonFormField<String>(
+            initialValue: selectedRoomId,
+            decoration: const InputDecoration(labelText: 'Raum'),
+            hint: const Text('Nicht zugeordnet'),
+            items: _roomLabels.entries
+                .map(
+                  (entry) => DropdownMenuItem(
+                    value: entry.key,
+                    child: Text(entry.value),
+                  ),
+                )
+                .toList(),
             onChanged: (value) {
-              setState(() => isOn = value);
-              widget.controller.toggleDevice(
-                widget.device.id,
-                value,
-                roomId: widget.roomId,
+              if (value == null || value == selectedRoomId) return;
+              setState(() => selectedRoomId = value);
+              context.read<SmartHomeBloc>().add(
+                SmartHomeDeviceAssignedToRoom(widget.device.id, value),
               );
             },
-          )
-        else
-          const InfoRow(label: 'Schalten', value: 'Nicht unterstützt'),
-        const SizedBox(height: 8),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: TextButton.icon(
-            onPressed: _removeDevice,
-            icon: const Icon(Icons.delete_outline_rounded),
-            label: const Text('Gerät von der Oberfläche entfernen'),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
           ),
-        ),
-      ],
+          const SizedBox(height: 8),
+          if (widget.device.canToggle)
+            PowerToggleRow(
+              value: isOn,
+              subtitle: isOn
+                  ? 'Gerät ist eingeschaltet'
+                  : 'Gerät ist ausgeschaltet',
+              onChanged: (value) {
+                setState(() => isOn = value);
+                context.read<SmartHomeBloc>().add(
+                  SmartHomeDeviceToggled(widget.device.id, value),
+                );
+              },
+            )
+          else
+            const InfoRow(label: 'Schalten', value: 'Nicht unterstützt'),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: _removeDevice,
+              icon: const Icon(Icons.delete_outline_rounded),
+              label: const Text('Gerät von der Oberfläche entfernen'),
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+            ),
+          ),
+        ],
+      ),
     ),
   );
 
@@ -210,7 +203,9 @@ class _DeviceInfoDialogState extends State<DeviceInfoDialog> {
       ),
     );
     if (!mounted || confirmed != true) return;
-    widget.controller.removeDevice(widget.device.id, roomId: widget.roomId);
+    context.read<SmartHomeBloc>().add(
+      SmartHomeDeviceRemovedFromView(widget.device.id),
+    );
     Navigator.pop(context);
   }
 }

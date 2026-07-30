@@ -1,4 +1,13 @@
-enum SmartHomeDeviceType { lamp, bulb, television, plug, sensor, other }
+enum SmartHomeDeviceType {
+  lamp,
+  bulb,
+  television,
+  plug,
+  sensor,
+  climate,
+  cover,
+  other,
+}
 
 extension SmartHomeDeviceTypeLabel on SmartHomeDeviceType {
   String get label => switch (this) {
@@ -7,10 +16,15 @@ extension SmartHomeDeviceTypeLabel on SmartHomeDeviceType {
     SmartHomeDeviceType.television => 'Fernseher',
     SmartHomeDeviceType.plug => 'Steckdose',
     SmartHomeDeviceType.sensor => 'Sensor',
+    SmartHomeDeviceType.climate => 'Klimasteuerung',
+    SmartHomeDeviceType.cover => 'Rollladen',
     SmartHomeDeviceType.other => 'Sonstiges',
   };
 }
 
+/// `id` holds the Home Assistant `entity_id` (e.g. `light.wohnzimmer_lampe`)
+/// once devices come from Home Assistant — there is no separate identity
+/// field, so every existing lookup by `id` keeps working unchanged.
 class SmartHomeDevice {
   const SmartHomeDevice({
     required this.id,
@@ -20,6 +34,7 @@ class SmartHomeDevice {
     required this.powerWatts,
     required this.dailyKwh,
     required this.lastUpdated,
+    this.roomId,
     this.switchCount = 0,
     this.isOn = true,
     this.x,
@@ -33,44 +48,75 @@ class SmartHomeDevice {
   final double powerWatts;
   final double dailyKwh;
   final String lastUpdated;
+
+  /// Local room assignment (Home Assistant area heuristic or manual
+  /// override). `null` means the device is not shown in any room yet.
+  final String? roomId;
   final int switchCount;
   final bool isOn;
+
+  /// Local, room-relative placement on the room map. `null` means the
+  /// device is assigned to a room (or not) but has not been placed yet.
   final double? x;
   final double? y;
+
+  bool get isPlaced => x != null && y != null;
 
   bool get canToggle => switch (type) {
     SmartHomeDeviceType.lamp ||
     SmartHomeDeviceType.bulb ||
     SmartHomeDeviceType.television ||
     SmartHomeDeviceType.plug => true,
-    SmartHomeDeviceType.sensor || SmartHomeDeviceType.other => false,
+    SmartHomeDeviceType.sensor ||
+    SmartHomeDeviceType.climate ||
+    SmartHomeDeviceType.cover ||
+    SmartHomeDeviceType.other => false,
   };
 
-  SmartHomeDevice withPowerState(bool nextIsOn) => SmartHomeDevice(
+  SmartHomeDevice copyWith({
+    String? roomId,
+    bool clearRoomId = false,
+    bool? isOn,
+    String? lastUpdated,
+    int? switchCount,
+    double? x,
+    double? y,
+    bool clearPlacement = false,
+  }) => SmartHomeDevice(
     id: id,
     name: name,
     type: type,
     status: status,
     powerWatts: powerWatts,
     dailyKwh: dailyKwh,
-    lastUpdated: 'gerade eben',
-    switchCount: switchCount + 1,
-    isOn: nextIsOn,
-    x: x,
-    y: y,
+    lastUpdated: lastUpdated ?? this.lastUpdated,
+    roomId: clearRoomId ? null : (roomId ?? this.roomId),
+    switchCount: switchCount ?? this.switchCount,
+    isOn: isOn ?? this.isOn,
+    x: clearPlacement ? null : (x ?? this.x),
+    y: clearPlacement ? null : (y ?? this.y),
   );
 
-  SmartHomeDevice placeAt(double nextX, double nextY) => SmartHomeDevice(
-    id: id,
-    name: name,
-    type: type,
-    status: status,
-    powerWatts: powerWatts,
-    dailyKwh: dailyKwh,
-    lastUpdated: lastUpdated,
-    switchCount: switchCount,
-    isOn: isOn,
+  SmartHomeDevice withPowerState(bool nextIsOn) => copyWith(
+    isOn: nextIsOn,
+    lastUpdated: 'gerade eben',
+    switchCount: switchCount + 1,
+  );
+
+  SmartHomeDevice placeAt(double nextX, double nextY) => copyWith(
     x: nextX.clamp(0.04, 0.96).toDouble(),
     y: nextY.clamp(0.06, 0.94).toDouble(),
   );
+
+  /// Reassigning a device to a (possibly different, possibly no) room
+  /// always drops its placement: `x`/`y` are relative to a specific room's
+  /// map image, so a stale position from another room would be meaningless.
+  SmartHomeDevice assignToRoom(String? nextRoomId) => nextRoomId == null
+      ? copyWith(clearRoomId: true, clearPlacement: true)
+      : copyWith(roomId: nextRoomId, clearPlacement: true);
+
+  /// Drops both room assignment and placement — the device falls back into
+  /// the "not assigned" pool `AddDeviceDialog` offers.
+  SmartHomeDevice removeFromView() =>
+      copyWith(clearRoomId: true, clearPlacement: true);
 }
