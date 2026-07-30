@@ -18,7 +18,7 @@ class MarketsCard extends StatelessWidget {
           const HomeCardTitle(
             icon: Icons.show_chart_rounded,
             title: 'Märkte',
-            trailing: '24h',
+            trailing: 'Heute',
           ),
           const SizedBox(height: 18),
           ...controller.markets.map(

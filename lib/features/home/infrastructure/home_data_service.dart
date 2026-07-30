@@ -119,7 +119,7 @@ class MarketService {
     if (symbol == MarketSymbol.btc) {
       try {
         final now = DateTime.now();
-        final start = now.subtract(const Duration(hours: 24));
+        final start = DateTime(now.year, now.month, now.day);
         final response = await http
             .get(
               Uri.https(
@@ -198,8 +198,11 @@ class MarketService {
                     ticker['price']?.toString() ?? '',
                   );
                   if (price == null) continue;
-                  final cutoff = DateTime.now().subtract(
-                    const Duration(hours: 24),
+                  final nowTime = DateTime.now();
+                  final cutoff = DateTime(
+                    nowTime.year,
+                    nowTime.month,
+                    nowTime.day,
                   );
                   final points = [
                     ...?_history[symbol],
@@ -252,10 +255,13 @@ class MarketService {
       MarketSymbol.es => 5400.0,
       MarketSymbol.btc => 108000.0,
     };
+    final now = DateTime.now();
+    final startOfDay = DateTime(now.year, now.month, now.day);
+    final hoursToday = max(1, now.difference(startOfDay).inHours);
     final points = List.generate(
-      24,
+      hoursToday + 1,
       (i) => MarketChartPoint(
-        DateTime.now().subtract(Duration(hours: 23 - i)),
+        startOfDay.add(Duration(hours: i)),
         base + sin(i / 3) * base * .004 + i * base * .0003,
       ),
     );
