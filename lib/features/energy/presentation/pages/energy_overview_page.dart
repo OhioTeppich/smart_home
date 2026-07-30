@@ -79,7 +79,7 @@ class OverviewPage extends StatelessWidget {
               final chart = ChartCard(period: period, onDetails: onDetails);
               const side = Column(
                 children: [
-                  SizedBox(height: 154, child: ComparisonCard()),
+                  SizedBox(height: 170, child: ComparisonCard()),
                   SizedBox(height: 18),
                   SizedBox(height: 154, child: GoalCard()),
                 ],
