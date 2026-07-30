@@ -31,11 +31,6 @@ class RoomPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            roomName,
-            style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w800),
-          ),
-          const SizedBox(height: 24),
           if (controller.isPlacing) ...[
             PlacementBanner(device: controller.pendingDevice!),
             const SizedBox(height: 12),
