@@ -112,6 +112,7 @@ class WeatherService {
 
 class MarketService {
   final Map<MarketSymbol, List<MarketChartPoint>> _history = {};
+  final Set<MarketSymbol> _realHistory = {};
   WebSocketChannel? _btcSocket;
   StreamSubscription? _btcSubscription;
 
@@ -147,6 +148,7 @@ class MarketService {
               .where((point) => point.time.isAfter(start))
               .toList();
           _history[symbol] = points;
+          _realHistory.add(symbol);
           final price = points.last.value;
           return MarketQuote(
             symbol: symbol,
@@ -204,6 +206,12 @@ class MarketService {
                     nowTime.month,
                     nowTime.day,
                   );
+                  if (!_realHistory.contains(symbol)) {
+                    // Demo-Platzhalterpreis verwerfen, sonst vermischt sich
+                    // Fake-Historie mit echten Live-Preisen (falsche Prozente).
+                    _history[symbol] = [];
+                    _realHistory.add(symbol);
+                  }
                   final points = [
                     ...?_history[symbol],
                     MarketChartPoint(DateTime.now(), price),
