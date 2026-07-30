@@ -162,7 +162,68 @@ class MarketService {
         }
       } catch (_) {}
     }
+    final yahooSymbol = switch (symbol) {
+      MarketSymbol.nq => '^NDX',
+      MarketSymbol.es => '^GSPC',
+      MarketSymbol.btc => null,
+    };
+    if (yahooSymbol != null) {
+      final quote = await _fetchYahooIndex(symbol, yahooSymbol);
+      if (quote != null) return quote;
+    }
     return _demo(symbol);
+  }
+
+  Future<MarketQuote?> _fetchYahooIndex(
+    MarketSymbol symbol,
+    String yahooSymbol,
+  ) async {
+    try {
+      final now = DateTime.now();
+      final start = DateTime(now.year, now.month, now.day);
+      final response = await http
+          .get(
+            Uri.https(
+              'query1.finance.yahoo.com',
+              '/v8/finance/chart/$yahooSymbol',
+              {'interval': '1h', 'range': '1d'},
+            ),
+            headers: {'User-Agent': 'Mozilla/5.0'},
+          )
+          .timeout(const Duration(seconds: 10));
+      if (response.statusCode != 200) return null;
+      final result =
+          (jsonDecode(response.body)['chart']['result'] as List?)?.first
+              as Map<String, dynamic>?;
+      final timestamps = (result?['timestamp'] as List?)?.cast<int>();
+      final closes =
+          ((result?['indicators']['quote'] as List?)?.first
+                  as Map<String, dynamic>?)?['close']
+              as List?;
+      if (timestamps == null || closes == null) return null;
+      final points = <MarketChartPoint>[
+        for (var i = 0; i < timestamps.length; i++)
+          if (closes[i] != null)
+            MarketChartPoint(
+              DateTime.fromMillisecondsSinceEpoch(timestamps[i] * 1000),
+              (closes[i] as num).toDouble(),
+            ),
+      ].where((point) => point.time.isAfter(start)).toList();
+      if (points.isEmpty) return null;
+      _history[symbol] = points;
+      final price = points.last.value;
+      return MarketQuote(
+        symbol: symbol,
+        price: price,
+        change: price - points.first.value,
+        changePercent: (price / points.first.value - 1) * 100,
+        updatedAt: DateTime.now(),
+        points: points,
+        isLive: true,
+      );
+    } catch (_) {
+      return null;
+    }
   }
 
   Stream<MarketQuote> live(MarketSymbol symbol) {

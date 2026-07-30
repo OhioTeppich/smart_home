@@ -65,8 +65,8 @@ extension MarketSymbolInfo on MarketSymbol {
     MarketSymbol.btc => 'BTC',
   };
   String get name => switch (this) {
-    MarketSymbol.nq => 'Nasdaq 100 Future',
-    MarketSymbol.es => 'S&P 500 Future',
+    MarketSymbol.nq => 'Nasdaq 100 Index',
+    MarketSymbol.es => 'S&P 500 Index',
     MarketSymbol.btc => 'Bitcoin',
   };
   String get currency => this == MarketSymbol.btc ? 'USD' : 'Punkte';
