@@ -1,0 +1,292 @@
+{
+  "android/app/build.gradle.kts": {
+    "mtime": 1785430902.840819,
+    "ast_hash": "dd48e7907739d3883f295a0964e53215",
+    "semantic_hash": "dd48e7907739d3883f295a0964e53215"
+  },
+  "android/app/src/main/kotlin/com/example/smart_home/MainActivity.kt": {
+    "mtime": 1785430902.8410106,
+    "ast_hash": "4f22890377c2a7dd526980eaef190f1a",
+    "semantic_hash": "4f22890377c2a7dd526980eaef190f1a"
+  },
+  "android/build.gradle.kts": {
+    "mtime": 1785430902.8410866,
+    "ast_hash": "699579880a795350891cafc998a3ec79",
+    "semantic_hash": "699579880a795350891cafc998a3ec79"
+  },
+  "android/settings.gradle.kts": {
+    "mtime": 1785430902.841608,
+    "ast_hash": "e61cad7ba20397368b0ef120702043cf",
+    "semantic_hash": "e61cad7ba20397368b0ef120702043cf"
+  },
+  "ios/Runner/AppDelegate.swift": {
+    "mtime": 1785430902.8565505,
+    "ast_hash": "303ca46dbd58544be7b816861d70a27c",
+    "semantic_hash": "303ca46dbd58544be7b816861d70a27c"
+  },
+  "ios/Runner/Assets.xcassets/AppIcon.appiconset/Contents.json": {
+    "mtime": 1785430902.856619,
+    "ast_hash": "c3cdf9688b604d14f2e76a8287e16167",
+    "semantic_hash": "c3cdf9688b604d14f2e76a8287e16167"
+  },
+  "ios/Runner/Assets.xcassets/LaunchImage.imageset/Contents.json": {
+    "mtime": 1785430902.856674,
+    "ast_hash": "770f4f65e02ca2fc57f46f4f4148d15d",
+    "semantic_hash": "770f4f65e02ca2fc57f46f4f4148d15d"
+  },
+  "ios/Runner/Runner-Bridging-Header.h": {
+    "mtime": 1785430902.8571897,
+    "ast_hash": "e07862ac930ed4d8479185d52c6cc66d",
+    "semantic_hash": "e07862ac930ed4d8479185d52c6cc66d"
+  },
+  "ios/RunnerTests/RunnerTests.swift": {
+    "mtime": 1785430902.8571897,
+    "ast_hash": "a225a382d14d7b16b6f602a5c1d49331",
+    "semantic_hash": "a225a382d14d7b16b6f602a5c1d49331"
+  },
+  "lib/app.dart": {
+    "mtime": 1785430902.8571897,
+    "ast_hash": "0f739f0b885f542e6a76d6fdd2737289",
+    "semantic_hash": "0f739f0b885f542e6a76d6fdd2737289"
+  },
+  "lib/app/shell/app_shell.dart": {
+    "mtime": 1785430902.857369,
+    "ast_hash": "b326ca2ccb27f2b505c79ae51d675c08",
+    "semantic_hash": "b326ca2ccb27f2b505c79ae51d675c08"
+  },
+  "lib/core/theme/app_theme.dart": {
+    "mtime": 1785430902.8574843,
+    "ast_hash": "fb5afab6f9d03f3444dfb4f800f300ac",
+    "semantic_hash": "fb5afab6f9d03f3444dfb4f800f300ac"
+  },
+  "lib/core/widgets/glass_card.dart": {
+    "mtime": 1785430902.8574843,
+    "ast_hash": "2b983645f96710d1e421ad2d635fd343",
+    "semantic_hash": "2b983645f96710d1e421ad2d635fd343"
+  },
+  "lib/features/energy/application/energy_dashboard_controller.dart": {
+    "mtime": 1785430902.857635,
+    "ast_hash": "52dfc0df70889a0778da09c28be57a5f",
+    "semantic_hash": "52dfc0df70889a0778da09c28be57a5f"
+  },
+  "lib/features/energy/domain/entities/device_usage.dart": {
+    "mtime": 1785430902.8577108,
+    "ast_hash": "da4a3c0ceff48c900448f0cf5fb46f78",
+    "semantic_hash": "da4a3c0ceff48c900448f0cf5fb46f78"
+  },
+  "lib/features/energy/domain/entities/energy_dashboard_data.dart": {
+    "mtime": 1785430902.8577476,
+    "ast_hash": "cc1d69ed885d23dc6dc639ddaf7b0d30",
+    "semantic_hash": "cc1d69ed885d23dc6dc639ddaf7b0d30"
+  },
+  "lib/features/energy/domain/entities/energy_point.dart": {
+    "mtime": 1785430902.8577476,
+    "ast_hash": "baae692a4e7eca200075f56c3678666f",
+    "semantic_hash": "baae692a4e7eca200075f56c3678666f"
+  },
+  "lib/features/energy/domain/repositories/energy_repository.dart": {
+    "mtime": 1785430902.8577476,
+    "ast_hash": "fb6c45df51880497668d9e3705c67cad",
+    "semantic_hash": "fb6c45df51880497668d9e3705c67cad"
+  },
+  "lib/features/energy/infrastructure/repositories/in_memory_energy_repository.dart": {
+    "mtime": 1785430902.8578544,
+    "ast_hash": "af80b15c655c42dc7e13fe3710c9ef2c",
+    "semantic_hash": "af80b15c655c42dc7e13fe3710c9ef2c"
+  },
+  "lib/features/energy/presentation/pages/energy_analysis_page.dart": {
+    "mtime": 1785430902.8579285,
+    "ast_hash": "73a5084144316a375d7fa3b599dc2db9",
+    "semantic_hash": "73a5084144316a375d7fa3b599dc2db9"
+  },
+  "lib/features/energy/presentation/pages/energy_overview_page.dart": {
+    "mtime": 1785430902.8579967,
+    "ast_hash": "a2054a112a20934bc66c35e4d78d9ffe",
+    "semantic_hash": "a2054a112a20934bc66c35e4d78d9ffe"
+  },
+  "lib/features/energy/presentation/widgets/energy_chart_widgets.dart": {
+    "mtime": 1785430902.8579967,
+    "ast_hash": "e30df0da1f8f072903835445049bb389",
+    "semantic_hash": "e30df0da1f8f072903835445049bb389"
+  },
+  "lib/features/energy/presentation/widgets/energy_metric_widgets.dart": {
+    "mtime": 1785430902.8580723,
+    "ast_hash": "a7f5ff8414b5318059173805c6e54c16",
+    "semantic_hash": "a7f5ff8414b5318059173805c6e54c16"
+  },
+  "lib/features/energy/presentation/widgets/energy_period_selector.dart": {
+    "mtime": 1785430902.8580723,
+    "ast_hash": "a2e5982d0c0859c64b160145a74f0302",
+    "semantic_hash": "a2e5982d0c0859c64b160145a74f0302"
+  },
+  "lib/features/energy/presentation/widgets/energy_summary_widgets.dart": {
+    "mtime": 1785430902.8580723,
+    "ast_hash": "88e91308c48e78ad136aeac930feae89",
+    "semantic_hash": "88e91308c48e78ad136aeac930feae89"
+  },
+  "lib/features/home/application/home_controller.dart": {
+    "mtime": 1785430902.8582335,
+    "ast_hash": "bbb1401401c11f5c23352e3c08924421",
+    "semantic_hash": "bbb1401401c11f5c23352e3c08924421"
+  },
+  "lib/features/home/domain/home_models.dart": {
+    "mtime": 1785430902.8582335,
+    "ast_hash": "7fdb541949607f3400bbdf49d3340742",
+    "semantic_hash": "7fdb541949607f3400bbdf49d3340742"
+  },
+  "lib/features/home/infrastructure/home_data_service.dart": {
+    "mtime": 1785430902.8582335,
+    "ast_hash": "ffb0849fbb146fce22ba216e9f9b8d89",
+    "semantic_hash": "ffb0849fbb146fce22ba216e9f9b8d89"
+  },
+  "lib/features/home/presentation/pages/home_page.dart": {
+    "mtime": 1785430902.8584406,
+    "ast_hash": "62962d644591b5d1e159529e069419c3",
+    "semantic_hash": "62962d644591b5d1e159529e069419c3"
+  },
+  "lib/features/home/presentation/widgets/home_card.dart": {
+    "mtime": 1785430902.8584406,
+    "ast_hash": "9b0ba798ed996dc2b235bc129b9c1500",
+    "semantic_hash": "9b0ba798ed996dc2b235bc129b9c1500"
+  },
+  "lib/features/home/presentation/widgets/home_overview.dart": {
+    "mtime": 1785430902.858542,
+    "ast_hash": "9a51dd486cc445c2ffb4d979e7fb024b",
+    "semantic_hash": "9a51dd486cc445c2ffb4d979e7fb024b"
+  },
+  "lib/features/home/presentation/widgets/markets_card.dart": {
+    "mtime": 1785430902.858542,
+    "ast_hash": "4a146b58acc804b3e14e98f3b9e421bc",
+    "semantic_hash": "4a146b58acc804b3e14e98f3b9e421bc"
+  },
+  "lib/features/home/presentation/widgets/top_devices_card.dart": {
+    "mtime": 1785430902.858542,
+    "ast_hash": "03948c6fc210421d6e8e39bfe93d63af",
+    "semantic_hash": "03948c6fc210421d6e8e39bfe93d63af"
+  },
+  "lib/features/home/presentation/widgets/weather_card.dart": {
+    "mtime": 1785430902.858542,
+    "ast_hash": "f2c33b96557e064e4d06f19e4d969e2f",
+    "semantic_hash": "f2c33b96557e064e4d06f19e4d969e2f"
+  },
+  "lib/features/rooms/application/controllers/smart_home_controller.dart": {
+    "mtime": 1785430902.858718,
+    "ast_hash": "87391089b7eeffae55373effdc4a8ab1",
+    "semantic_hash": "87391089b7eeffae55373effdc4a8ab1"
+  },
+  "lib/features/rooms/domain/entities/smart_home_device.dart": {
+    "mtime": 1785430902.8587964,
+    "ast_hash": "769887a90d2c71e24fdeb0965b7f3870",
+    "semantic_hash": "769887a90d2c71e24fdeb0965b7f3870"
+  },
+  "lib/features/rooms/domain/repositories/smart_home_repository.dart": {
+    "mtime": 1785430902.8587964,
+    "ast_hash": "3d3559770faa93ffc6d104d299dab8df",
+    "semantic_hash": "3d3559770faa93ffc6d104d299dab8df"
+  },
+  "lib/features/rooms/infrastructure/repositories/in_memory_smart_home_repository.dart": {
+    "mtime": 1785430902.8589058,
+    "ast_hash": "86afa748a992f4dde3301ffed616b5c0",
+    "semantic_hash": "86afa748a992f4dde3301ffed616b5c0"
+  },
+  "lib/features/rooms/presentation/pages/room_page.dart": {
+    "mtime": 1785430902.8589575,
+    "ast_hash": "7d659beeb12aff0686bdc76e89e98acf",
+    "semantic_hash": "7d659beeb12aff0686bdc76e89e98acf"
+  },
+  "lib/features/rooms/presentation/state/smart_home_scope.dart": {
+    "mtime": 1785430902.8589575,
+    "ast_hash": "1eaa088f8cc6be5913bf8a3ec3aa362f",
+    "semantic_hash": "1eaa088f8cc6be5913bf8a3ec3aa362f"
+  },
+  "lib/features/rooms/presentation/widgets/room_device_list.dart": {
+    "mtime": 1785430902.8589575,
+    "ast_hash": "45136d84056f297e7b127f9ae54a1d59",
+    "semantic_hash": "45136d84056f297e7b127f9ae54a1d59"
+  },
+  "lib/features/rooms/presentation/widgets/room_dialogs.dart": {
+    "mtime": 1785430902.8590953,
+    "ast_hash": "7470d9208f93a8be20428706ce87c575",
+    "semantic_hash": "7470d9208f93a8be20428706ce87c575"
+  },
+  "lib/features/rooms/presentation/widgets/room_layout.dart": {
+    "mtime": 1785430902.8590953,
+    "ast_hash": "8479e13d4e23de4a67a085c253cf1468",
+    "semantic_hash": "8479e13d4e23de4a67a085c253cf1468"
+  },
+  "lib/features/rooms/presentation/widgets/room_map.dart": {
+    "mtime": 1785430902.8590953,
+    "ast_hash": "fc029c31009227e2d1d67327c3e78369",
+    "semantic_hash": "fc029c31009227e2d1d67327c3e78369"
+  },
+  "lib/features/rooms/presentation/widgets/smart_home_device_ui.dart": {
+    "mtime": 1785430902.8590953,
+    "ast_hash": "cab1f00462c240a973839fb49e028b0e",
+    "semantic_hash": "cab1f00462c240a973839fb49e028b0e"
+  },
+  "lib/main.dart": {
+    "mtime": 1785430902.8590953,
+    "ast_hash": "e3f828f1c78b3ccd6d2ee02f29564b21",
+    "semantic_hash": "e3f828f1c78b3ccd6d2ee02f29564b21"
+  },
+  "test/widget_test.dart": {
+    "mtime": 1785430902.8590953,
+    "ast_hash": "3f6b65b7a5970a4204cb55236e33e71a",
+    "semantic_hash": "3f6b65b7a5970a4204cb55236e33e71a"
+  },
+  "web/manifest.json": {
+    "mtime": 1785430902.8595464,
+    "ast_hash": "bcfd8faccf89f9dfd29930ff7d1cf4e0",
+    "semantic_hash": "bcfd8faccf89f9dfd29930ff7d1cf4e0"
+  },
+  "AGENTS.md": {
+    "mtime": 1785430902.839516,
+    "ast_hash": "04a1bdb593953f3b7f344e736d9a6afc",
+    "semantic_hash": "04a1bdb593953f3b7f344e736d9a6afc"
+  },
+  "ARCHITECTURE.md": {
+    "mtime": 1785430902.839516,
+    "ast_hash": "8bbf60fa199ab71ffbe8f6ee74ec6505",
+    "semantic_hash": "8bbf60fa199ab71ffbe8f6ee74ec6505"
+  },
+  "README.md": {
+    "mtime": 1785430902.839516,
+    "ast_hash": "f0aa165554b8f50f0c817ad07641b4ca",
+    "semantic_hash": "f0aa165554b8f50f0c817ad07641b4ca"
+  },
+  "analysis_options.yaml": {
+    "mtime": 1785430902.839516,
+    "ast_hash": "be4b078e1022d3a457690c54dd76aa16",
+    "semantic_hash": "be4b078e1022d3a457690c54dd76aa16"
+  },
+  "ios/Runner/Assets.xcassets/LaunchImage.imageset/README.md": {
+    "mtime": 1785430902.8570383,
+    "ast_hash": "e175e436acacf76c814d83532d0b662c",
+    "semantic_hash": "e175e436acacf76c814d83532d0b662c"
+  },
+  "pubspec.yaml": {
+    "mtime": 1785430902.8590953,
+    "ast_hash": "9d32c38e1b3f3298e2c17846003d4c3e",
+    "semantic_hash": "9d32c38e1b3f3298e2c17846003d4c3e"
+  },
+  "web/index.html": {
+    "mtime": 1785430902.8595464,
+    "ast_hash": "36178b69c4bcd444212491979d53d54e",
+    "semantic_hash": "36178b69c4bcd444212491979d53d54e"
+  },
+  "assets/images/living-room.png": {
+    "mtime": 1785430902.8500435,
+    "ast_hash": "76bb8697640ec1b74e6fab35aaff35fa",
+    "semantic_hash": "76bb8697640ec1b74e6fab35aaff35fa"
+  },
+  "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png": {
+    "mtime": 1785430902.856674,
+    "ast_hash": "c785f8932297af4acd5f5ccb7630f01c",
+    "semantic_hash": "c785f8932297af4acd5f5ccb7630f01c"
+  },
+  "ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@3x.png": {
+    "mtime": 1785430902.8570383,
+    "ast_hash": "978c1bee49d7ad5fc1a4d81099b13e18",
+    "semantic_hash": "978c1bee49d7ad5fc1a4d81099b13e18"
+  }
+}

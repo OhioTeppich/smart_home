@@ -43,3 +43,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# graphify local machine state (not portable across machines)
+graphify-out/.graphify_python
+graphify-out/.graphify_root
