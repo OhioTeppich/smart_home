@@ -101,13 +101,16 @@ class _WeatherCardState extends State<WeatherCard> {
               builder: (context, constraints) {
                 _centerCurrentHour(weather);
                 final now = DateTime.now();
-                final currentPoint = weather.hourly.reduce(
-                  (a, b) => a.time.difference(now).inMinutes.abs() <
-                          b.time.difference(now).inMinutes.abs()
-                      ? a
-                      : b,
-                );
-                final currentIndex = weather.hourly.indexOf(currentPoint);
+                final currentIndex = weather.hourly.isEmpty
+                    ? -1
+                    : weather.hourly.indexOf(
+                        weather.hourly.reduce(
+                          (a, b) => a.time.difference(now).inMinutes.abs() <
+                                  b.time.difference(now).inMinutes.abs()
+                              ? a
+                              : b,
+                        ),
+                      );
                 return SizedBox(
                   height: 68,
                   child: ListView.builder(

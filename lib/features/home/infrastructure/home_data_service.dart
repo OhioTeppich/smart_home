@@ -32,21 +32,33 @@ class WeatherService {
     );
   }
 
+  static const _fallbackLocation = WeatherLocation(
+    name: 'Oelde',
+    latitude: 51.8167,
+    longitude: 8.15,
+  );
+
   Future<WeatherLocation> currentLocation() async {
-    if (!await Geolocator.isLocationServiceEnabled())
-      throw Exception('Standortdienste sind deaktiviert.');
-    var permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied)
-      permission = await Geolocator.requestPermission();
-    if (permission == LocationPermission.denied ||
-        permission == LocationPermission.deniedForever)
-      throw Exception('Standortberechtigung wurde nicht erteilt.');
-    final position = await Geolocator.getCurrentPosition();
-    return WeatherLocation(
-      name: 'Mein Standort',
-      latitude: position.latitude,
-      longitude: position.longitude,
-    );
+    try {
+      if (!await Geolocator.isLocationServiceEnabled()) {
+        return _fallbackLocation;
+      }
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied)
+        permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever)
+        return _fallbackLocation;
+      final position = await Geolocator.getCurrentPosition()
+          .timeout(const Duration(seconds: 8));
+      return WeatherLocation(
+        name: 'Mein Standort',
+        latitude: position.latitude,
+        longitude: position.longitude,
+      );
+    } catch (_) {
+      return _fallbackLocation;
+    }
   }
 
   Future<WeatherSnapshot> fetch(WeatherLocation location) async {
