@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -60,7 +61,7 @@ class _AppShellState extends State<AppShell> {
             ),
             child: SafeArea(
               child: Padding(
-                padding: EdgeInsets.only(top: compact ? 92 : 104),
+                padding: EdgeInsets.only(top: compact ? 108 : 124),
                 child: _buildPage(compact, period),
               ),
             ),
@@ -93,6 +94,9 @@ class _AppShellState extends State<AppShell> {
         value: period,
         onChanged: EnergyScope.of(context).selectPeriod,
       );
+    }
+    if (section == AppSection.home) {
+      return const _LiveClock();
     }
     return null;
   }
@@ -173,15 +177,15 @@ class AppNavigationBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(22),
+      borderRadius: BorderRadius.circular(26),
       child: BackdropFilter(
         filter: ui.ImageFilter.blur(sigmaX: 18, sigmaY: 18),
         child: Container(
-          height: 64,
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          height: 80,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(.64),
-            borderRadius: BorderRadius.circular(22),
+            borderRadius: BorderRadius.circular(26),
             border: Border.all(color: Colors.white.withOpacity(.88)),
             boxShadow: [
               BoxShadow(
@@ -194,14 +198,14 @@ class AppNavigationBar extends StatelessWidget {
           child: Row(
             children: [
               const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12),
+                padding: EdgeInsets.symmetric(horizontal: 14),
                 child: Text(
                   '30. Juli 2026',
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
                 ),
               ),
-              Container(width: 1, height: 28, color: AppColors.line),
-              const SizedBox(width: 12),
+              Container(width: 1, height: 34, color: AppColors.line),
+              const SizedBox(width: 14),
               _NavItem(
                 icon: Icons.grid_view_rounded,
                 label: 'Home',
@@ -209,7 +213,7 @@ class AppNavigationBar extends StatelessWidget {
                 compact: compact,
                 onTap: () => onSectionChanged(AppSection.home),
               ),
-              const SizedBox(width: 5),
+              const SizedBox(width: 6),
               _NavItem(
                 icon: Icons.bolt_rounded,
                 label: 'Energie',
@@ -219,50 +223,16 @@ class AppNavigationBar extends StatelessWidget {
                 compact: compact,
                 onTap: () => onSectionChanged(AppSection.energy),
               ),
-              const SizedBox(width: 5),
-              _NavItem(
-                icon: Icons.weekend_rounded,
-                label: 'Wohnzimmer',
-                selected: section == AppSection.livingRoom,
+              const SizedBox(width: 6),
+              _RoomsNavItem(
+                section: section,
                 compact: compact,
-                onTap: () => onSectionChanged(AppSection.livingRoom),
-              ),
-              const SizedBox(width: 5),
-              _NavItem(
-                icon: Icons.bedroom_parent_outlined,
-                label: 'Schlafzimmer',
-                selected: section == AppSection.bedroom,
-                compact: compact,
-                onTap: () => onSectionChanged(AppSection.bedroom),
-              ),
-              const SizedBox(width: 5),
-              _NavItem(
-                icon: Icons.kitchen_outlined,
-                label: 'Küche',
-                selected: section == AppSection.kitchen,
-                compact: compact,
-                onTap: () => onSectionChanged(AppSection.kitchen),
-              ),
-              const SizedBox(width: 5),
-              _NavItem(
-                icon: Icons.bathtub_outlined,
-                label: 'Bad',
-                selected: section == AppSection.bathroom,
-                compact: compact,
-                onTap: () => onSectionChanged(AppSection.bathroom),
-              ),
-              const SizedBox(width: 5),
-              _NavItem(
-                icon: Icons.door_front_door_outlined,
-                label: 'Flur',
-                selected: section == AppSection.hallway,
-                compact: compact,
-                onTap: () => onSectionChanged(AppSection.hallway),
+                onSectionChanged: onSectionChanged,
               ),
               const Spacer(),
               if (trailing != null) ...[
-                Container(width: 1, height: 28, color: AppColors.line),
-                const SizedBox(width: 15),
+                Container(width: 1, height: 34, color: AppColors.line),
+                const SizedBox(width: 17),
                 trailing!,
               ],
             ],
@@ -293,28 +263,28 @@ class _NavItem extends StatelessWidget {
     borderRadius: BorderRadius.circular(13),
     child: AnimatedContainer(
       duration: const Duration(milliseconds: 180),
-      height: 44,
-      padding: EdgeInsets.symmetric(horizontal: compact ? 12 : 14),
+      height: 56,
+      padding: EdgeInsets.symmetric(horizontal: compact ? 14 : 17),
       decoration: BoxDecoration(
         color: selected ? AppColors.ink : Colors.transparent,
-        borderRadius: BorderRadius.circular(13),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
             icon,
-            size: 18,
+            size: 22,
             color: selected ? Colors.white : AppColors.muted,
           ),
           if (!compact) ...[
-            const SizedBox(width: 9),
+            const SizedBox(width: 10),
             Text(
               label,
               style: TextStyle(
                 color: selected ? Colors.white : AppColors.muted,
                 fontWeight: FontWeight.w700,
-                fontSize: 13,
+                fontSize: 15,
               ),
             ),
           ],
@@ -322,6 +292,263 @@ class _NavItem extends StatelessWidget {
       ),
     ),
   );
+}
+
+class _RoomSpec {
+  const _RoomSpec(this.section, this.icon, this.label);
+  final AppSection section;
+  final IconData icon;
+  final String label;
+}
+
+const _rooms = [
+  _RoomSpec(AppSection.livingRoom, Icons.weekend_rounded, 'Wohnzimmer'),
+  _RoomSpec(AppSection.bedroom, Icons.bedroom_parent_outlined, 'Schlafzimmer'),
+  _RoomSpec(AppSection.kitchen, Icons.kitchen_outlined, 'Küche'),
+  _RoomSpec(AppSection.bathroom, Icons.bathtub_outlined, 'Bad'),
+  _RoomSpec(AppSection.hallway, Icons.door_front_door_outlined, 'Flur'),
+];
+
+class _RoomsNavItem extends StatefulWidget {
+  const _RoomsNavItem({
+    required this.section,
+    required this.compact,
+    required this.onSectionChanged,
+  });
+
+  final AppSection section;
+  final bool compact;
+  final ValueChanged<AppSection> onSectionChanged;
+
+  @override
+  State<_RoomsNavItem> createState() => _RoomsNavItemState();
+}
+
+class _RoomsNavItemState extends State<_RoomsNavItem> {
+  final _overlayController = OverlayPortalController();
+  final _link = LayerLink();
+
+  bool get _isRoomSection =>
+      _rooms.any((room) => room.section == widget.section);
+
+  void _select(AppSection section) {
+    widget.onSectionChanged(section);
+    _overlayController.hide();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final selected = _isRoomSection;
+    return CompositedTransformTarget(
+      link: _link,
+      child: OverlayPortal(
+        controller: _overlayController,
+        overlayChildBuilder: (context) => Stack(
+          children: [
+            Positioned.fill(
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: _overlayController.hide,
+              ),
+            ),
+            CompositedTransformFollower(
+              link: _link,
+              showWhenUnlinked: false,
+              offset: const Offset(0, 64),
+              child: _RoomsDropdownPanel(
+                current: widget.section,
+                onSelect: _select,
+              ),
+            ),
+          ],
+        ),
+        child: InkWell(
+          onTap: _overlayController.toggle,
+          borderRadius: BorderRadius.circular(16),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            height: 56,
+            padding: EdgeInsets.symmetric(
+              horizontal: widget.compact ? 14 : 17,
+            ),
+            decoration: BoxDecoration(
+              color: selected ? AppColors.ink : Colors.transparent,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.other_houses_rounded,
+                  size: 22,
+                  color: selected ? Colors.white : AppColors.muted,
+                ),
+                if (!widget.compact) ...[
+                  const SizedBox(width: 10),
+                  Text(
+                    'Räume',
+                    style: TextStyle(
+                      color: selected ? Colors.white : AppColors.muted,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                    ),
+                  ),
+                  const SizedBox(width: 2),
+                  Icon(
+                    Icons.expand_more_rounded,
+                    size: 20,
+                    color: selected ? Colors.white : AppColors.muted,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _RoomsDropdownPanel extends StatelessWidget {
+  const _RoomsDropdownPanel({required this.current, required this.onSelect});
+
+  final AppSection current;
+  final ValueChanged<AppSection> onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.topLeft,
+      child: Material(
+        color: Colors.transparent,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: BackdropFilter(
+            filter: ui.ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+            child: Container(
+              width: 240,
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(.88),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.white.withOpacity(.9)),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.blueDark.withOpacity(.12),
+                    blurRadius: 24,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (final room in _rooms)
+                    _RoomsDropdownItem(
+                      room: room,
+                      selected: room.section == current,
+                      onTap: () => onSelect(room.section),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _RoomsDropdownItem extends StatelessWidget {
+  const _RoomsDropdownItem({
+    required this.room,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final _RoomSpec room;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => InkWell(
+    onTap: onTap,
+    borderRadius: BorderRadius.circular(13),
+    child: Container(
+      width: double.infinity,
+      height: 48,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: selected ? AppColors.ink : Colors.transparent,
+        borderRadius: BorderRadius.circular(13),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            room.icon,
+            size: 20,
+            color: selected ? Colors.white : AppColors.muted,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              room.label,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: selected ? Colors.white : AppColors.ink,
+                fontWeight: FontWeight.w700,
+                fontSize: 14,
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+class _LiveClock extends StatefulWidget {
+  const _LiveClock();
+
+  @override
+  State<_LiveClock> createState() => _LiveClockState();
+}
+
+class _LiveClockState extends State<_LiveClock> {
+  late Timer _timer;
+  DateTime _now = DateTime.now();
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      setState(() => _now = DateTime.now());
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final hh = _now.hour.toString().padLeft(2, '0');
+    final mm = _now.minute.toString().padLeft(2, '0');
+    final ss = _now.second.toString().padLeft(2, '0');
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6),
+      child: Text(
+        '$hh:$mm:$ss',
+        style: const TextStyle(
+          fontWeight: FontWeight.w700,
+          fontSize: 15,
+          fontFeatures: [ui.FontFeature.tabularFigures()],
+        ),
+      ),
+    );
+  }
 }
 
 class _AddDeviceButton extends StatelessWidget {
@@ -334,20 +561,23 @@ class _AddDeviceButton extends StatelessWidget {
       ? IconButton(
           onPressed: onPressed,
           tooltip: 'Gerät hinzufügen',
-          icon: const Icon(Icons.add_rounded),
+          icon: const Icon(Icons.add_rounded, size: 22),
           color: Colors.white,
           style: IconButton.styleFrom(
             backgroundColor: AppColors.ink,
             foregroundColor: Colors.white,
+            minimumSize: const Size(48, 48),
           ),
         )
       : FilledButton.icon(
           onPressed: onPressed,
-          icon: const Icon(Icons.add_rounded, size: 18),
+          icon: const Icon(Icons.add_rounded, size: 20),
           label: const Text('Gerät hinzufügen'),
           style: FilledButton.styleFrom(
             backgroundColor: AppColors.ink,
             foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+            textStyle: const TextStyle(fontSize: 14),
           ),
         );
 }

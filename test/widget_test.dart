@@ -32,7 +32,9 @@ void main() {
     await tester.binding.setSurfaceSize(const Size(1200, 900));
     await tester.pumpWidget(const SmartHomeApp());
 
-    await tester.tap(find.byIcon(Icons.weekend_rounded).first);
+    await tester.tap(find.byIcon(Icons.other_houses_rounded).first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Wohnzimmer').first);
     await tester.pumpAndSettle();
 
     expect(find.text('Wohnzimmer'), findsAtLeastNWidgets(1));
