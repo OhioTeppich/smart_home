@@ -51,6 +51,19 @@ class ParcelTrackingRefreshAllRequested extends ParcelTrackingEvent {
   const ParcelTrackingRefreshAllRequested();
 }
 
+class ParcelTrackingApiKeySaveRequested extends ParcelTrackingEvent {
+  const ParcelTrackingApiKeySaveRequested(this.apiKey);
+
+  final String apiKey;
+
+  @override
+  List<Object?> get props => [apiKey];
+}
+
+class ParcelTrackingApiKeyCleared extends ParcelTrackingEvent {
+  const ParcelTrackingApiKeyCleared();
+}
+
 /// Internal: folded from [ParcelRepository.watchParcels].
 class ParcelTrackingParcelsUpdated extends ParcelTrackingEvent {
   const ParcelTrackingParcelsUpdated(this.parcels);

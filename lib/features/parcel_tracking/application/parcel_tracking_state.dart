@@ -18,19 +18,32 @@ class ParcelTrackingLoading extends ParcelTrackingState {
 }
 
 class ParcelTrackingReady extends ParcelTrackingState {
-  const ParcelTrackingReady({required this.parcels, this.isRefreshing = false});
+  const ParcelTrackingReady({
+    required this.parcels,
+    required this.isConfigured,
+    this.isRefreshing = false,
+  });
 
   final List<Parcel> parcels;
+
+  /// Whether a tracking-provider API key is stored. `false` doesn't block
+  /// viewing/removing already-tracked parcels — it only hints that adding a
+  /// new one (or refreshing status) needs setup first.
+  final bool isConfigured;
   final bool isRefreshing;
 
-  ParcelTrackingReady copyWith({List<Parcel>? parcels, bool? isRefreshing}) =>
-      ParcelTrackingReady(
-        parcels: parcels ?? this.parcels,
-        isRefreshing: isRefreshing ?? this.isRefreshing,
-      );
+  ParcelTrackingReady copyWith({
+    List<Parcel>? parcels,
+    bool? isConfigured,
+    bool? isRefreshing,
+  }) => ParcelTrackingReady(
+    parcels: parcels ?? this.parcels,
+    isConfigured: isConfigured ?? this.isConfigured,
+    isRefreshing: isRefreshing ?? this.isRefreshing,
+  );
 
   @override
-  List<Object?> get props => [parcels, isRefreshing];
+  List<Object?> get props => [parcels, isConfigured, isRefreshing];
 }
 
 class ParcelTrackingError extends ParcelTrackingState {

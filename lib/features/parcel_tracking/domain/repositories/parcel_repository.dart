@@ -24,4 +24,12 @@ abstract class ParcelRepository {
 
   /// Throws a [ParcelTrackingFailure] subtype on failure.
   Future<void> refreshAll();
+
+  /// Whether a tracking-provider API key is stored, so the UI can hint at
+  /// setup being needed before the user tries to add a parcel.
+  Future<bool> hasApiKeyConfigured();
+
+  Future<void> configureApiKey(String apiKey);
+
+  Future<void> clearApiKey();
 }

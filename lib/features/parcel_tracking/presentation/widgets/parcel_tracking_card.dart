@@ -7,6 +7,7 @@ import '../../application/parcel_tracking_bloc.dart';
 import '../../application/parcel_tracking_state.dart';
 import '../pages/parcel_add_page.dart';
 import '../pages/parcel_list_page.dart';
+import '../pages/track17_settings_page.dart';
 import 'parcel_list_tile.dart';
 
 /// Unlike `WeatherCard`/`MarketsCard`, this card has no `HomeCardTitle`
@@ -40,11 +41,27 @@ class ParcelTrackingCard extends StatelessWidget {
         }
 
         final parcels = state.parcels;
+        final configHint = state.isConfigured
+            ? null
+            : Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: GestureDetector(
+                  onTap: () => Navigator.of(context).push<void>(
+                    MaterialPageRoute(builder: (_) => const Track17SettingsPage()),
+                  ),
+                  child: const Text(
+                    '17Track nicht eingerichtet — Status bleibt unbekannt.',
+                    style: TextStyle(color: AppColors.muted, fontSize: 11),
+                  ),
+                ),
+              );
+
         if (parcels.isEmpty) {
           return Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              if (configHint != null) configHint,
               const Text(
                 'Keine Pakete verfolgt.',
                 style: TextStyle(color: AppColors.muted, fontSize: 12),
@@ -67,6 +84,7 @@ class ParcelTrackingCard extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            if (configHint != null) configHint,
             for (final parcel in visible) ...[
               ParcelListTile(parcel: parcel),
               if (parcel != visible.last) const SizedBox(height: 8),

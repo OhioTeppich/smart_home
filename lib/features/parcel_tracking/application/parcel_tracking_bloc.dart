@@ -17,16 +17,20 @@ class ParcelTrackingBloc extends Bloc<ParcelTrackingEvent, ParcelTrackingState> 
     on<ParcelTrackingParcelRemoved>(_onParcelRemoved);
     on<ParcelTrackingRefreshRequested>(_onRefreshRequested);
     on<ParcelTrackingRefreshAllRequested>(_onRefreshAllRequested);
+    on<ParcelTrackingApiKeySaveRequested>(_onApiKeySaveRequested);
+    on<ParcelTrackingApiKeyCleared>(_onApiKeyCleared);
   }
 
   final ParcelRepository _repository;
   StreamSubscription<List<Parcel>>? _parcelsSubscription;
+  bool _isConfigured = false;
 
   Future<void> _onStarted(
     ParcelTrackingStarted event,
     Emitter<ParcelTrackingState> emit,
   ) async {
     emit(const ParcelTrackingLoading());
+    _isConfigured = await _repository.hasApiKeyConfigured();
     await _parcelsSubscription?.cancel();
     _parcelsSubscription = _repository.watchParcels().listen(
       (parcels) => add(ParcelTrackingParcelsUpdated(parcels)),
@@ -39,7 +43,7 @@ class ParcelTrackingBloc extends Bloc<ParcelTrackingEvent, ParcelTrackingState> 
     ParcelTrackingParcelsUpdated event,
     Emitter<ParcelTrackingState> emit,
   ) {
-    emit(ParcelTrackingReady(parcels: event.parcels));
+    emit(ParcelTrackingReady(parcels: event.parcels, isConfigured: _isConfigured));
   }
 
   void _onStreamFailed(
@@ -110,6 +114,32 @@ class ParcelTrackingBloc extends Bloc<ParcelTrackingEvent, ParcelTrackingState> 
     final afterRefresh = state;
     if (afterRefresh is ParcelTrackingReady) {
       emit(afterRefresh.copyWith(isRefreshing: false));
+    }
+  }
+
+  Future<void> _onApiKeySaveRequested(
+    ParcelTrackingApiKeySaveRequested event,
+    Emitter<ParcelTrackingState> emit,
+  ) async {
+    final trimmed = event.apiKey.trim();
+    if (trimmed.isEmpty) return;
+    await _repository.configureApiKey(trimmed);
+    _isConfigured = true;
+    final current = state;
+    if (current is ParcelTrackingReady) {
+      emit(current.copyWith(isConfigured: true));
+    }
+  }
+
+  Future<void> _onApiKeyCleared(
+    ParcelTrackingApiKeyCleared event,
+    Emitter<ParcelTrackingState> emit,
+  ) async {
+    await _repository.clearApiKey();
+    _isConfigured = false;
+    final current = state;
+    if (current is ParcelTrackingReady) {
+      emit(current.copyWith(isConfigured: false));
     }
   }
 
