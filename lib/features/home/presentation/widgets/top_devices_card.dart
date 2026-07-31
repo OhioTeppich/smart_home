@@ -42,7 +42,16 @@ class TopDevicesCard extends StatelessWidget {
     final allDevices = smartHome is SmartHomeConnected
         ? smartHome.devices
         : const <SmartHomeDevice>[];
-    final devices = overview.rankedDevices(allDevices);
+    // Schaltbare Geräte (Lampe/Birne/Fernseher/Steckdose) plus Cover — reine
+    // Sensoren wie z.B. Backup- oder Diagnose-Entities landen sonst mit 0 in
+    // der Top-Liste, sobald es nicht genug echte Verbrauchsgeräte gibt.
+    final rankableDevices = allDevices
+        .where(
+          (device) =>
+              device.canToggle || device.type == SmartHomeDeviceType.cover,
+        )
+        .toList();
+    final devices = overview.rankedDevices(rankableDevices);
     return HomeCard(
       child: SizedBox(
         height: 214,
