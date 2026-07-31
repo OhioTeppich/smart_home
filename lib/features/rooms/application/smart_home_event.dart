@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+import '../domain/entities/cover_action.dart';
 import '../domain/entities/smart_home_device.dart';
 
 sealed class SmartHomeEvent extends Equatable {
@@ -21,6 +22,16 @@ class SmartHomeDeviceToggled extends SmartHomeEvent {
 
   @override
   List<Object?> get props => [id, isOn];
+}
+
+class SmartHomeCoverActionRequested extends SmartHomeEvent {
+  const SmartHomeCoverActionRequested(this.id, this.action);
+
+  final String id;
+  final CoverAction action;
+
+  @override
+  List<Object?> get props => [id, action];
 }
 
 class SmartHomeDeviceAssignedToRoom extends SmartHomeEvent {

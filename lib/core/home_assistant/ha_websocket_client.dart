@@ -132,6 +132,102 @@ class HaWebSocketClient {
     return controller.stream;
   }
 
+  /// Fetches Home Assistant's entity registry (`config/entity_registry/list`)
+  /// — one-off request/response over a short-lived connection, closed again
+  /// once the result arrives. Used to read `entity_category` (diagnostic
+  /// sensors, config entities, ...) which `/api/states` does not expose.
+  Future<List<Map<String, dynamic>>> fetchEntityRegistry({
+    required String baseUrl,
+    required String token,
+  }) async {
+    const requestId = 1;
+    WebSocketChannel? channel;
+    StreamSubscription? subscription;
+    try {
+      final authCompleter = Completer<void>();
+      final resultCompleter = Completer<List<Map<String, dynamic>>>();
+
+      channel = WebSocketChannel.connect(_toWebSocketUri(baseUrl));
+      await channel.ready;
+
+      subscription = channel.stream.listen(
+        (raw) {
+          try {
+            if (raw is! String) return;
+            final decoded = jsonDecode(raw);
+            if (decoded is! Map<String, dynamic>) return;
+            switch (decoded['type']) {
+              case 'auth_required':
+                channel!.sink.add(
+                  jsonEncode({'type': 'auth', 'access_token': token}),
+                );
+                break;
+              case 'auth_ok':
+                if (!authCompleter.isCompleted) authCompleter.complete();
+                break;
+              case 'auth_invalid':
+                if (!authCompleter.isCompleted) {
+                  authCompleter.completeError(const HaAuthException());
+                }
+                break;
+              case 'result':
+                if (decoded['id'] == requestId && !resultCompleter.isCompleted) {
+                  if (decoded['success'] == true) {
+                    resultCompleter.complete(
+                      (decoded['result'] as List).cast<Map<String, dynamic>>(),
+                    );
+                  } else {
+                    resultCompleter.completeError(
+                      const HaProtocolException(
+                        'Abrufen der Home-Assistant-Entity-Registry fehlgeschlagen.',
+                      ),
+                    );
+                  }
+                }
+                break;
+              default:
+                break;
+            }
+          } catch (_) {
+            // Einzelne fehlerhafte Nachrichten dürfen den Abruf nicht
+            // abbrechen — nur die erwartete `result`-Nachricht zählt.
+          }
+        },
+        onError: (_, __) {
+          if (!authCompleter.isCompleted) {
+            authCompleter.completeError(const HaConnectionException());
+          }
+          if (!resultCompleter.isCompleted) {
+            resultCompleter.completeError(const HaConnectionException());
+          }
+        },
+        onDone: () {
+          if (!authCompleter.isCompleted) {
+            authCompleter.completeError(const HaConnectionException());
+          }
+          if (!resultCompleter.isCompleted) {
+            resultCompleter.completeError(const HaConnectionException());
+          }
+        },
+        cancelOnError: false,
+      );
+
+      await authCompleter.future.timeout(const Duration(seconds: 10));
+      channel.sink.add(
+        jsonEncode({'id': requestId, 'type': 'config/entity_registry/list'}),
+      );
+      return await resultCompleter.future.timeout(const Duration(seconds: 10));
+    } on TimeoutException {
+      throw const HaTimeoutException();
+    } catch (error) {
+      if (error is HaClientException) rethrow;
+      throw const HaConnectionException();
+    } finally {
+      await subscription?.cancel();
+      await channel?.sink.close();
+    }
+  }
+
   Uri _toWebSocketUri(String baseUrl) {
     final uri = Uri.parse(baseUrl);
     final scheme = uri.scheme == 'https' ? 'wss' : 'ws';

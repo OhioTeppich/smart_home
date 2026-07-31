@@ -39,6 +39,10 @@ class HaEntityStateDto {
       lastUpdated: 'gerade eben',
       roomId: roomId,
       isOn: _deriveIsOn(),
+      coverPosition: domain == 'cover'
+          ? _numericAttribute('current_position')
+          : null,
+      coverRawState: domain == 'cover' ? state : null,
     );
   }
 
@@ -52,6 +56,7 @@ class HaEntityStateDto {
   bool _deriveIsOn() {
     if (_isUnavailable) return false;
     if (domain == 'media_player') return state != 'off' && state != 'idle';
+    if (domain == 'cover') return state == 'open' || state == 'opening';
     return state == 'on';
   }
 

@@ -5,6 +5,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../application/smart_home_bloc.dart';
 import '../../application/smart_home_event.dart';
 import '../../application/smart_home_state.dart';
+import '../../domain/entities/cover_action.dart';
 import '../../domain/entities/smart_home_device.dart';
 import 'smart_home_device_ui.dart';
 
@@ -19,52 +20,104 @@ const _roomLabels = <String, String>{
 /// Devices are never invented by hand anymore — Home Assistant is the only
 /// source of device existence. This dialog just lets the user place an
 /// already-assigned-but-unplaced device from [roomId] onto the room map.
-class AddDeviceDialog extends StatelessWidget {
+class AddDeviceDialog extends StatefulWidget {
   const AddDeviceDialog({required this.roomId, super.key});
   final String roomId;
+
+  @override
+  State<AddDeviceDialog> createState() => _AddDeviceDialogState();
+}
+
+class _AddDeviceDialogState extends State<AddDeviceDialog> {
+  final _searchController = TextEditingController();
+  String _query = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final state = context.watch<SmartHomeBloc>().state;
     final available = state is SmartHomeConnected
         ? state.devices
-              .where((device) => device.roomId == roomId && !device.isPlaced)
+              .where(
+                (device) =>
+                    (device.roomId == widget.roomId || device.roomId == null) &&
+                    !device.isPlaced,
+              )
               .toList()
         : const <SmartHomeDevice>[];
+    final query = _query.trim().toLowerCase();
+    final filtered = query.isEmpty
+        ? available
+        : available
+              .where(
+                (device) =>
+                    device.name.toLowerCase().contains(query) ||
+                    device.type.label.toLowerCase().contains(query),
+              )
+              .toList();
 
     return AlertDialog(
       title: const Text('Gerät hinzufügen'),
       content: SizedBox(
         width: 380,
-        child: available.isEmpty
-            ? const Text(
-                'Keine unplatzierten Geräte für diesen Raum gefunden. Geräte '
-                'werden automatisch aus Home Assistant übernommen, sobald ihr '
-                'Name auf diesen Raum hindeutet, oder lassen sich im '
-                'Geräte-Dialog manuell zuordnen.',
-              )
-            : ConstrainedBox(
-                constraints: const BoxConstraints(maxHeight: 360),
-                child: ListView.separated(
-                  shrinkWrap: true,
-                  itemCount: available.length,
-                  separatorBuilder: (_, index) => const Divider(height: 1),
-                  itemBuilder: (context, index) {
-                    final device = available[index];
-                    return ListTile(
-                      leading: Icon(device.type.icon, color: device.type.color),
-                      title: Text(device.name),
-                      subtitle: Text(device.type.label),
-                      onTap: () {
-                        context.read<SmartHomeBloc>().add(
-                          SmartHomePlacementStarted(device, roomId),
-                        );
-                        Navigator.pop(context);
-                      },
-                    );
-                  },
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+            if (available.isNotEmpty) ...[
+              TextField(
+                controller: _searchController,
+                autofocus: true,
+                decoration: const InputDecoration(
+                  hintText: 'Gerät suchen…',
+                  prefixIcon: Icon(Icons.search),
+                  isDense: true,
                 ),
+                onChanged: (value) => setState(() => _query = value),
               ),
+              const SizedBox(height: 12),
+            ],
+            available.isEmpty
+                ? const Text(
+                    'Keine unplatzierten Geräte für diesen Raum gefunden. Geräte '
+                    'werden automatisch aus Home Assistant übernommen, sobald ihr '
+                    'Name auf diesen Raum hindeutet, oder lassen sich im '
+                    'Geräte-Dialog manuell zuordnen.',
+                  )
+                : filtered.isEmpty
+                ? const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    child: Text('Keine Geräte gefunden.'),
+                  )
+                : ConstrainedBox(
+                    constraints: const BoxConstraints(maxHeight: 360),
+                    child: ListView.separated(
+                      shrinkWrap: true,
+                      itemCount: filtered.length,
+                      separatorBuilder: (_, index) => const Divider(height: 1),
+                      itemBuilder: (context, index) {
+                        final device = filtered[index];
+                        return ListTile(
+                          leading: Icon(device.type.icon, color: device.type.color),
+                          title: Text(device.name),
+                          subtitle: Text(device.type.label),
+                          onTap: () {
+                            context.read<SmartHomeBloc>().add(
+                              SmartHomePlacementStarted(device, widget.roomId),
+                            );
+                            Navigator.pop(context);
+                          },
+                        );
+                      },
+                    ),
+                  ),
+          ],
+        ),
       ),
       actions: [
         TextButton(
@@ -153,7 +206,14 @@ class _DeviceInfoDialogState extends State<DeviceInfoDialog> {
             },
           ),
           const SizedBox(height: 8),
-          if (widget.device.canToggle)
+          if (widget.device.type == SmartHomeDeviceType.cover)
+            CoverControlRow(
+              device: widget.device,
+              onAction: (action) => context.read<SmartHomeBloc>().add(
+                SmartHomeCoverActionRequested(widget.device.id, action),
+              ),
+            )
+          else if (widget.device.canToggle)
             PowerToggleRow(
               value: isOn,
               subtitle: isOn
@@ -246,6 +306,53 @@ class _PowerToggleRowState extends State<PowerToggleRow> {
         hoverColor: Colors.transparent,
       ),
     ),
+  );
+}
+
+class CoverControlRow extends StatelessWidget {
+  const CoverControlRow({required this.device, required this.onAction, super.key});
+  final SmartHomeDevice device;
+  final ValueChanged<CoverAction> onAction;
+
+  String get _statusLabel {
+    final position = device.coverPosition;
+    if (position != null) return '${position.round()}% geöffnet';
+    return switch (device.coverRawState) {
+      'open' => 'Offen',
+      'closed' => 'Geschlossen',
+      'opening' => 'Wird geöffnet …',
+      'closing' => 'Wird geschlossen …',
+      _ => 'Unbekannt',
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      InfoRow(label: 'Position', value: _statusLabel),
+      const SizedBox(height: 8),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          IconButton.filledTonal(
+            onPressed: () => onAction(CoverAction.open),
+            icon: const Icon(Icons.keyboard_arrow_up_rounded),
+            tooltip: 'Öffnen',
+          ),
+          IconButton.filledTonal(
+            onPressed: () => onAction(CoverAction.stop),
+            icon: const Icon(Icons.stop_rounded),
+            tooltip: 'Stopp',
+          ),
+          IconButton.filledTonal(
+            onPressed: () => onAction(CoverAction.close),
+            icon: const Icon(Icons.keyboard_arrow_down_rounded),
+            tooltip: 'Schließen',
+          ),
+        ],
+      ),
+    ],
   );
 }
 

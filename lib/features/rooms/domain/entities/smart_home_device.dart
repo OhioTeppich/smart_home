@@ -39,6 +39,8 @@ class SmartHomeDevice {
     this.isOn = true,
     this.x,
     this.y,
+    this.coverPosition,
+    this.coverRawState,
   });
 
   final String id;
@@ -59,6 +61,15 @@ class SmartHomeDevice {
   /// device is assigned to a room (or not) but has not been placed yet.
   final double? x;
   final double? y;
+
+  /// How far a `cover` is open, `0`–`100`. `null` if Home Assistant doesn't
+  /// report a position for this cover (not every integration supports it).
+  final double? coverPosition;
+
+  /// The raw Home Assistant `cover` state (`open`/`closed`/`opening`/
+  /// `closing`/...) — used as a status fallback when [coverPosition] is
+  /// unavailable. `null` for every non-`cover` device.
+  final String? coverRawState;
 
   bool get isPlaced => x != null && y != null;
 
@@ -82,6 +93,8 @@ class SmartHomeDevice {
     double? x,
     double? y,
     bool clearPlacement = false,
+    double? coverPosition,
+    String? coverRawState,
   }) => SmartHomeDevice(
     id: id,
     name: name,
@@ -95,6 +108,8 @@ class SmartHomeDevice {
     isOn: isOn ?? this.isOn,
     x: clearPlacement ? null : (x ?? this.x),
     y: clearPlacement ? null : (y ?? this.y),
+    coverPosition: coverPosition ?? this.coverPosition,
+    coverRawState: coverRawState ?? this.coverRawState,
   );
 
   SmartHomeDevice withPowerState(bool nextIsOn) => copyWith(

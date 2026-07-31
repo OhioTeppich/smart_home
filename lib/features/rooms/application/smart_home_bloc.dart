@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../domain/entities/smart_home_device.dart';
 import '../domain/failures/smart_home_failure.dart';
 import '../domain/repositories/smart_home_repository.dart';
 import 'smart_home_event.dart';
@@ -13,6 +14,7 @@ class SmartHomeBloc extends Bloc<SmartHomeEvent, SmartHomeState> {
     on<SmartHomeDevicesUpdated>(_onDevicesUpdated);
     on<SmartHomeStreamFailed>(_onStreamFailed);
     on<SmartHomeDeviceToggled>(_onDeviceToggled);
+    on<SmartHomeCoverActionRequested>(_onCoverActionRequested);
     on<SmartHomeDeviceAssignedToRoom>(_onDeviceAssignedToRoom);
     on<SmartHomeDeviceRemovedFromView>(_onDeviceRemovedFromView);
     on<SmartHomePlacementStarted>(_onPlacementStarted);
@@ -69,12 +71,35 @@ class SmartHomeBloc extends Bloc<SmartHomeEvent, SmartHomeState> {
     }
   }
 
+  Future<void> _onCoverActionRequested(
+    SmartHomeCoverActionRequested event,
+    Emitter<SmartHomeState> emit,
+  ) async {
+    try {
+      await _repository.controlCover(event.id, event.action);
+    } on SmartHomeFailure catch (failure) {
+      emit(SmartHomeError(failure.message));
+    }
+  }
+
   Future<void> _onDeviceAssignedToRoom(
     SmartHomeDeviceAssignedToRoom event,
     Emitter<SmartHomeState> emit,
   ) async {
+    final current = state;
     try {
       await _repository.assignDeviceToRoom(event.id, event.roomId);
+      if (current is SmartHomeConnected) {
+        emit(
+          current.copyWith(
+            devices: _updateDevice(
+              current.devices,
+              event.id,
+              (device) => device.assignToRoom(event.roomId),
+            ),
+          ),
+        );
+      }
     } on SmartHomeFailure catch (failure) {
       emit(SmartHomeError(failure.message));
     }
@@ -84,8 +109,20 @@ class SmartHomeBloc extends Bloc<SmartHomeEvent, SmartHomeState> {
     SmartHomeDeviceRemovedFromView event,
     Emitter<SmartHomeState> emit,
   ) async {
+    final current = state;
     try {
       await _repository.removeFromView(event.id);
+      if (current is SmartHomeConnected) {
+        emit(
+          current.copyWith(
+            devices: _updateDevice(
+              current.devices,
+              event.id,
+              (device) => device.removeFromView(),
+            ),
+          ),
+        );
+      }
     } on SmartHomeFailure catch (failure) {
       emit(SmartHomeError(failure.message));
     }
@@ -123,6 +160,17 @@ class SmartHomeBloc extends Bloc<SmartHomeEvent, SmartHomeState> {
         event.x,
         event.y,
       );
+      emit(
+        current.copyWith(
+          clearPendingPlacement: true,
+          devices: _updateDevice(
+            current.devices,
+            pending.device.id,
+            (device) =>
+                device.assignToRoom(pending.roomId).placeAt(event.x, event.y),
+          ),
+        ),
+      );
     } on SmartHomeFailure catch (failure) {
       emit(SmartHomeError(failure.message));
     }
@@ -136,6 +184,15 @@ class SmartHomeBloc extends Bloc<SmartHomeEvent, SmartHomeState> {
     if (current is! SmartHomeConnected) return;
     emit(current.copyWith(clearPendingPlacement: true));
   }
+
+  List<SmartHomeDevice> _updateDevice(
+    List<SmartHomeDevice> devices,
+    String id,
+    SmartHomeDevice Function(SmartHomeDevice device) update,
+  ) => [
+    for (final device in devices)
+      if (device.id == id) update(device) else device,
+  ];
 
   String _messageFor(Object error) =>
       error is SmartHomeFailure ? error.message : 'Unerwarteter Fehler: $error';

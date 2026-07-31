@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:smart_home/features/rooms/application/smart_home_bloc.dart';
 import 'package:smart_home/features/rooms/application/smart_home_event.dart';
 import 'package:smart_home/features/rooms/application/smart_home_state.dart';
+import 'package:smart_home/features/rooms/domain/entities/cover_action.dart';
 import 'package:smart_home/features/rooms/domain/entities/smart_home_device.dart';
 import 'package:smart_home/features/rooms/domain/failures/smart_home_failure.dart';
 import 'package:smart_home/features/rooms/domain/repositories/smart_home_repository.dart';
@@ -38,6 +39,11 @@ class _FakeSmartHomeRepository implements SmartHomeRepository {
   Future<void> toggleDevice(String id, bool isOn) async {
     calls.add('toggle:$id:$isOn');
     if (toggleError != null) throw toggleError!;
+  }
+
+  @override
+  Future<void> controlCover(String id, CoverAction action) async {
+    calls.add('cover:$id:$action');
   }
 
   @override

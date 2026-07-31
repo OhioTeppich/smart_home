@@ -9,6 +9,7 @@ import 'package:smart_home/features/ha_connection/domain/repositories/ha_connect
 import 'package:smart_home/features/ha_connection/domain/value_objects/ha_connection_config.dart';
 import 'package:smart_home/features/rooms/application/smart_home_bloc.dart';
 import 'package:smart_home/features/rooms/application/smart_home_event.dart';
+import 'package:smart_home/features/rooms/domain/entities/cover_action.dart';
 import 'package:smart_home/features/rooms/domain/entities/smart_home_device.dart';
 import 'package:smart_home/features/rooms/domain/failures/smart_home_failure.dart';
 import 'package:smart_home/features/rooms/domain/repositories/smart_home_repository.dart';
@@ -44,6 +45,9 @@ class _FakeSmartHomeRepository implements SmartHomeRepository {
 
   @override
   Future<void> toggleDevice(String id, bool isOn) async {}
+
+  @override
+  Future<void> controlCover(String id, CoverAction action) async {}
 
   @override
   Future<void> assignDeviceToRoom(String id, String? roomId) async {}

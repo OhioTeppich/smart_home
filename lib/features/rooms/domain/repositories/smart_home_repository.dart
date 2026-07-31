@@ -1,3 +1,4 @@
+import '../entities/cover_action.dart';
 import '../entities/smart_home_device.dart';
 
 abstract class SmartHomeRepository {
@@ -10,6 +11,11 @@ abstract class SmartHomeRepository {
   Future<List<SmartHomeDevice>> fetchDevices();
 
   Future<void> toggleDevice(String id, bool isOn);
+
+  /// Calls Home Assistant's `cover.open_cover`/`close_cover`/`stop_cover`.
+  /// Home Assistant drives the physical movement itself — this only starts
+  /// or stops it, it does not track progress.
+  Future<void> controlCover(String id, CoverAction action);
 
   /// `roomId: null` unassigns the device. Always clears the device's
   /// placement (see [SmartHomeDevice.assignToRoom]).
