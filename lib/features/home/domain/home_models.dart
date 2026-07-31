@@ -31,6 +31,9 @@ class WeatherSnapshot {
     required this.weatherCode,
     required this.minTemperature,
     required this.maxTemperature,
+    required this.humidity,
+    required this.sunrise,
+    required this.sunset,
     required this.updatedAt,
     required this.hourly,
   });
@@ -41,6 +44,9 @@ class WeatherSnapshot {
   final int weatherCode;
   final double minTemperature;
   final double maxTemperature;
+  final int humidity;
+  final DateTime sunrise;
+  final DateTime sunset;
   final DateTime updatedAt;
   final List<HourlyWeatherPoint> hourly;
 

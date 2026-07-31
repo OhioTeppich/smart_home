@@ -67,9 +67,9 @@ class WeatherService {
       'longitude': '${location.longitude}',
       'timezone': 'auto',
       'current':
-          'temperature_2m,apparent_temperature,weather_code,wind_speed_10m',
+          'temperature_2m,apparent_temperature,weather_code,wind_speed_10m,relative_humidity_2m',
       'hourly': 'temperature_2m,precipitation_probability,weather_code',
-      'daily': 'temperature_2m_max,temperature_2m_min',
+      'daily': 'temperature_2m_max,temperature_2m_min,sunrise,sunset',
       'forecast_days': '1',
     });
     final response = await http.get(uri).timeout(const Duration(seconds: 12));
@@ -96,6 +96,13 @@ class WeatherService {
       maxTemperature:
           (((json['daily'] as Map)['temperature_2m_max'] as List).first as num)
               .toDouble(),
+      humidity: (current['relative_humidity_2m'] as num).toInt(),
+      sunrise: DateTime.parse(
+        (((json['daily'] as Map)['sunrise'] as List).first as String),
+      ),
+      sunset: DateTime.parse(
+        (((json['daily'] as Map)['sunset'] as List).first as String),
+      ),
       updatedAt: DateTime.now(),
       hourly: [
         for (var i = 0; i < min(24, times.length); i++)

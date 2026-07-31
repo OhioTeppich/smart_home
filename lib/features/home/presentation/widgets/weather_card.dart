@@ -96,6 +96,33 @@ class _WeatherCardState extends State<WeatherCard> {
               'Gefühlt ${weather.feelsLike.round()}°  ·  ${weather.minTemperature.round()}° / ${weather.maxTemperature.round()}°  ·  Wind ${weather.windSpeed.round()} km/h',
               style: const TextStyle(color: AppColors.muted, fontSize: 12),
             ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.wb_twilight_rounded,
+                    size: 14, color: AppColors.muted),
+                const SizedBox(width: 4),
+                Text(_formatTime(weather.sunrise),
+                    style: const TextStyle(
+                        color: AppColors.muted, fontSize: 12)),
+                const Text('  ·  ',
+                    style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                const Icon(Icons.nights_stay_rounded,
+                    size: 14, color: AppColors.muted),
+                const SizedBox(width: 4),
+                Text(_formatTime(weather.sunset),
+                    style: const TextStyle(
+                        color: AppColors.muted, fontSize: 12)),
+                const Text('  ·  ',
+                    style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                const Icon(Icons.water_drop_rounded,
+                    size: 14, color: AppColors.muted),
+                const SizedBox(width: 4),
+                Text('${weather.humidity}%',
+                    style: const TextStyle(
+                        color: AppColors.muted, fontSize: 12)),
+              ],
+            ),
             const SizedBox(height: 14),
             LayoutBuilder(
               builder: (context, constraints) {
@@ -196,6 +223,9 @@ class _WeatherCardState extends State<WeatherCard> {
     );
   }
 }
+
+String _formatTime(DateTime time) =>
+    '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
 
 IconData _weatherIcon(int code) => switch (code) {
       0 => Icons.wb_sunny_rounded,
