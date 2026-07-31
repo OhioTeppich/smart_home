@@ -168,8 +168,8 @@ class _SpotifyTrackView extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
               child: track.albumArtUrl == null
                   ? Container(
-                      width: 64,
-                      height: 64,
+                      width: 76,
+                      height: 76,
                       color: AppColors.blue.withOpacity(.15),
                       child: const Icon(
                         Icons.album_rounded,
@@ -178,8 +178,8 @@ class _SpotifyTrackView extends StatelessWidget {
                     )
                   : Image.network(
                       track.albumArtUrl!,
-                      width: 64,
-                      height: 64,
+                      width: 76,
+                      height: 76,
                       fit: BoxFit.cover,
                     ),
             ),
@@ -246,7 +246,7 @@ class _SpotifyTrackView extends StatelessWidget {
           children: [
             _SpotifyControlButton(
               icon: Icons.skip_previous_rounded,
-              size: 30,
+              size: 36,
               onPressed: () => context.read<SpotifyBloc>().add(
                 const SpotifyPlaybackCommandRequested(
                   SpotifyPlaybackCommand.skipPrevious,
@@ -257,7 +257,7 @@ class _SpotifyTrackView extends StatelessWidget {
               icon: nowPlaying.isPlaying
                   ? Icons.pause_rounded
                   : Icons.play_arrow_rounded,
-              size: 38,
+              size: 46,
               onPressed: () => context.read<SpotifyBloc>().add(
                 SpotifyPlaybackCommandRequested(
                   nowPlaying.isPlaying
@@ -268,7 +268,7 @@ class _SpotifyTrackView extends StatelessWidget {
             ),
             _SpotifyControlButton(
               icon: Icons.skip_next_rounded,
-              size: 30,
+              size: 36,
               onPressed: () => context.read<SpotifyBloc>().add(
                 const SpotifyPlaybackCommandRequested(
                   SpotifyPlaybackCommand.skipNext,
@@ -283,7 +283,7 @@ class _SpotifyTrackView extends StatelessWidget {
             children: [
               _SpotifyControlButton(
                 icon: Icons.volume_down_rounded,
-                size: 18,
+                size: 24,
                 onPressed: () => context.read<SpotifyBloc>().add(
                   const SpotifyVolumeChangeRequested(-10),
                 ),
@@ -301,7 +301,7 @@ class _SpotifyTrackView extends StatelessWidget {
               ),
               _SpotifyControlButton(
                 icon: Icons.volume_up_rounded,
-                size: 18,
+                size: 24,
                 onPressed: () => context.read<SpotifyBloc>().add(
                   const SpotifyVolumeChangeRequested(10),
                 ),
