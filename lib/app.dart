@@ -28,65 +28,73 @@ class SmartHomeApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(
-          create: (context) => HaConnectionBloc(
-            HaConnectionRepositoryImpl(HaConnectionLocalDataSource()),
-          )..add(const HaConnectionStarted()),
-        ),
-        BlocProvider(
-          create: (context) => QuickAccessBloc(
-            QuickAccessRepositoryImpl(QuickAccessLocalDataSource()),
-          )..add(const QuickAccessStarted()),
-        ),
-      ],
-      // Both blocs must live above `MaterialApp`, not inside `home:`.
-      // Dialogs opened with `showDialog` and pages pushed with
-      // `Navigator.push` become sibling routes on the same root Navigator,
-      // not descendants of whatever page opened them — so any provider
-      // placed inside `home:` (like `AppShell`) is invisible to them. Only
-      // providers above the Navigator (i.e. above `MaterialApp`) are seen
-      // by every route.
-      child: BlocBuilder<HaConnectionBloc, HaConnectionState>(
-        buildWhen: (previous, current) => _configOf(previous) != _configOf(current),
-        builder: (context, state) {
-          final config = _configOf(state);
-          final energyController = EnergyDashboardController(
-            EnergyRepositoryImpl(EnergyLocalDataSource()),
-          )..start();
-          return BlocProvider<SmartHomeBloc>(
-            // A changed key makes Flutter tear down the old provider
-            // element (closing the old bloc) and create a fresh one,
-            // rebuilding `SmartHomeBloc` whenever the connection changes.
-            key: ValueKey(config),
-            create: (context) => SmartHomeBloc(
-              HomeAssistantSmartHomeRepository(config: config),
-            )..add(const SmartHomeStarted()),
-            child: MaterialApp(
-              title: 'Smart Home',
-              debugShowCheckedModeBanner: false,
-              scrollBehavior: const SmartHomeScrollBehavior(),
-              theme: AppTheme.light,
-              builder: (context, child) =>
-                  AppScale(scale: 1.12, child: child ?? const SizedBox.shrink()),
-              home: BlocListener<SmartHomeBloc, SmartHomeState>(
-                listener: (context, state) {
-                  if (state is SmartHomeConnected) {
-                    energyController.updateDevices(state.devices);
-                  }
-                },
-                child: EnergyScope(
-                  controller: energyController,
+    final energyController = EnergyDashboardController(
+      EnergyRepositoryImpl(EnergyLocalDataSource()),
+    )..start();
+    return EnergyScope(
+      // Same reasoning as the comment below on `HaConnectionBloc`/
+      // `QuickAccessBloc`: `EnergyScope.of(context)` is used from pages
+      // pushed via `Navigator.push` (e.g. the energy price settings page,
+      // reached through the settings hub) — those become sibling routes on
+      // the root Navigator, not descendants of `home:`, so `EnergyScope`
+      // must live above `MaterialApp` to be visible there too.
+      controller: energyController,
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (context) => HaConnectionBloc(
+              HaConnectionRepositoryImpl(HaConnectionLocalDataSource()),
+            )..add(const HaConnectionStarted()),
+          ),
+          BlocProvider(
+            create: (context) => QuickAccessBloc(
+              QuickAccessRepositoryImpl(QuickAccessLocalDataSource()),
+            )..add(const QuickAccessStarted()),
+          ),
+        ],
+        // Both blocs must live above `MaterialApp`, not inside `home:`.
+        // Dialogs opened with `showDialog` and pages pushed with
+        // `Navigator.push` become sibling routes on the same root Navigator,
+        // not descendants of whatever page opened them — so any provider
+        // placed inside `home:` (like `AppShell`) is invisible to them. Only
+        // providers above the Navigator (i.e. above `MaterialApp`) are seen
+        // by every route.
+        child: BlocBuilder<HaConnectionBloc, HaConnectionState>(
+          buildWhen: (previous, current) => _configOf(previous) != _configOf(current),
+          builder: (context, state) {
+            final config = _configOf(state);
+            return BlocProvider<SmartHomeBloc>(
+              // A changed key makes Flutter tear down the old provider
+              // element (closing the old bloc) and create a fresh one,
+              // rebuilding `SmartHomeBloc` whenever the connection changes.
+              key: ValueKey(config),
+              create: (context) => SmartHomeBloc(
+                HomeAssistantSmartHomeRepository(config: config),
+              )..add(const SmartHomeStarted()),
+              child: MaterialApp(
+                title: 'Smart Home',
+                debugShowCheckedModeBanner: false,
+                scrollBehavior: const SmartHomeScrollBehavior(),
+                theme: AppTheme.light,
+                builder: (context, child) => AppScale(
+                  scale: 1.12,
+                  child: child ?? const SizedBox.shrink(),
+                ),
+                home: BlocListener<SmartHomeBloc, SmartHomeState>(
+                  listener: (context, state) {
+                    if (state is SmartHomeConnected) {
+                      energyController.updateDevices(state.devices);
+                    }
+                  },
                   child: HomeScope(
                     controller: HomeController()..start(),
                     child: const AppShell(),
                   ),
                 ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
