@@ -3,9 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../home/presentation/widgets/home_card.dart';
+import '../../application/mailbox_bloc.dart';
+import '../../application/mailbox_state.dart';
 import '../../application/parcel_tracking_bloc.dart';
 import '../../application/parcel_tracking_state.dart';
 import '../pages/parcel_add_page.dart';
+import '../pages/parcel_candidate_confirmation_page.dart';
 import '../pages/parcel_list_page.dart';
 import '../pages/track17_settings_page.dart';
 import 'parcel_list_tile.dart';
@@ -40,6 +43,33 @@ class ParcelTrackingCard extends StatelessWidget {
           );
         }
 
+        final pendingCandidateCount = context.select<MailboxBloc, int>((bloc) {
+          final mailboxState = bloc.state;
+          return mailboxState is MailboxReady
+              ? mailboxState.pendingCandidates.length
+              : 0;
+        });
+        final candidateBanner = pendingCandidateCount == 0
+            ? null
+            : Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: GestureDetector(
+                  onTap: () => Navigator.of(context).push<void>(
+                    MaterialPageRoute(
+                      builder: (_) => const ParcelCandidateConfirmationPage(),
+                    ),
+                  ),
+                  child: Text(
+                    '$pendingCandidateCount neue Sendung${pendingCandidateCount == 1 ? '' : 'en'} gefunden',
+                    style: const TextStyle(
+                      color: AppColors.blueDark,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              );
+
         final parcels = state.parcels;
         final configHint = state.isConfigured
             ? null
@@ -61,6 +91,7 @@ class ParcelTrackingCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              if (candidateBanner != null) candidateBanner,
               if (configHint != null) configHint,
               const Text(
                 'Keine Pakete verfolgt.',
@@ -84,6 +115,7 @@ class ParcelTrackingCard extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            if (candidateBanner != null) candidateBanner,
             if (configHint != null) configHint,
             for (final parcel in visible) ...[
               ParcelListTile(parcel: parcel),

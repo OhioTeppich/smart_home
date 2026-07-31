@@ -30,7 +30,13 @@ class ParcelTrackingBloc extends Bloc<ParcelTrackingEvent, ParcelTrackingState> 
     Emitter<ParcelTrackingState> emit,
   ) async {
     emit(const ParcelTrackingLoading());
-    _isConfigured = await _repository.hasApiKeyConfigured();
+    try {
+      _isConfigured = await _repository.hasApiKeyConfigured();
+    } catch (_) {
+      // A failed configuration check (e.g. secure storage unavailable)
+      // must not block the parcel list itself from loading.
+      _isConfigured = false;
+    }
     await _parcelsSubscription?.cancel();
     _parcelsSubscription = _repository.watchParcels().listen(
       (parcels) => add(ParcelTrackingParcelsUpdated(parcels)),
@@ -123,7 +129,12 @@ class ParcelTrackingBloc extends Bloc<ParcelTrackingEvent, ParcelTrackingState> 
   ) async {
     final trimmed = event.apiKey.trim();
     if (trimmed.isEmpty) return;
-    await _repository.configureApiKey(trimmed);
+    try {
+      await _repository.configureApiKey(trimmed);
+    } catch (_) {
+      emit(const ParcelTrackingError('API-Key konnte nicht gespeichert werden.'));
+      return;
+    }
     _isConfigured = true;
     final current = state;
     if (current is ParcelTrackingReady) {

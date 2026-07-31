@@ -13,11 +13,17 @@ import 'features/ha_connection/application/ha_connection_state.dart';
 import 'features/ha_connection/domain/value_objects/ha_connection_config.dart';
 import 'features/ha_connection/infrastructure/data_sources/ha_connection_local_data_source.dart';
 import 'features/ha_connection/infrastructure/repositories/ha_connection_repository_impl.dart';
+import 'features/parcel_tracking/application/mailbox_bloc.dart';
+import 'features/parcel_tracking/application/mailbox_event.dart';
 import 'features/parcel_tracking/application/parcel_tracking_bloc.dart';
 import 'features/parcel_tracking/application/parcel_tracking_event.dart';
+import 'features/parcel_tracking/domain/services/tracking_number_extractor.dart';
+import 'features/parcel_tracking/infrastructure/data_sources/imap_scan_data_source.dart';
+import 'features/parcel_tracking/infrastructure/data_sources/mailbox_credentials_local_data_source.dart';
 import 'features/parcel_tracking/infrastructure/data_sources/parcel_local_data_source.dart';
 import 'features/parcel_tracking/infrastructure/data_sources/track17_api_key_local_data_source.dart';
 import 'features/parcel_tracking/infrastructure/data_sources/track17_remote_data_source.dart';
+import 'features/parcel_tracking/infrastructure/repositories/imap_mailbox_repository.dart';
 import 'features/parcel_tracking/infrastructure/repositories/track17_parcel_repository.dart';
 import 'features/quick_access/application/quick_access_bloc.dart';
 import 'features/quick_access/application/quick_access_event.dart';
@@ -41,6 +47,14 @@ class SmartHomeApp extends StatelessWidget {
     final energyController = EnergyDashboardController(
       EnergyRepositoryImpl(EnergyLocalDataSource()),
     )..start();
+    final parcelApiKeyDataSource = Track17ApiKeyLocalDataSource();
+    // Shared between `ParcelTrackingBloc` and `MailboxBloc` so a confirmed
+    // email candidate and a manually added parcel land in the same cache.
+    final parcelRepository = Track17ParcelRepository(
+      ParcelLocalDataSource(),
+      parcelApiKeyDataSource,
+      Track17RemoteDataSource(apiKeyProvider: parcelApiKeyDataSource.read),
+    );
     return EnergyScope(
       // Same reasoning as the comment below on `HaConnectionBloc`/
       // `QuickAccessBloc`: `EnergyScope.of(context)` is used from pages
@@ -67,16 +81,20 @@ class SmartHomeApp extends StatelessWidget {
             )..add(const SpotifyStarted()),
           ),
           BlocProvider(
-            create: (context) {
-              final apiKeyDataSource = Track17ApiKeyLocalDataSource();
-              return ParcelTrackingBloc(
-                Track17ParcelRepository(
-                  ParcelLocalDataSource(),
-                  apiKeyDataSource,
-                  Track17RemoteDataSource(apiKeyProvider: apiKeyDataSource.read),
-                ),
-              )..add(const ParcelTrackingStarted());
-            },
+            create: (context) =>
+                ParcelTrackingBloc(parcelRepository)
+                  ..add(const ParcelTrackingStarted()),
+          ),
+          BlocProvider(
+            create: (context) => MailboxBloc(
+              ImapMailboxRepository(
+                MailboxCredentialsLocalDataSource(),
+                ImapScanDataSource(),
+                const TrackingNumberExtractor(),
+                parcelRepository,
+              ),
+              parcelRepository,
+            )..add(const MailboxStarted()),
           ),
         ],
         // Both blocs must live above `MaterialApp`, not inside `home:`.
