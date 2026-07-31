@@ -1,9 +1,23 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import 'ha_client_exceptions.dart';
+
+/// Runs off the main isolate via [compute] — `/api/states` can return
+/// hundreds of KB to multiple MB for a Home Assistant instance with many
+/// entities, and decoding that inline would otherwise block the UI thread.
+List<Map<String, dynamic>> _decodeStates(String body) {
+  final decoded = jsonDecode(body);
+  if (decoded is! List) {
+    throw const HaProtocolException(
+      'Unerwartetes Antwortformat von /api/states.',
+    );
+  }
+  return decoded.cast<Map<String, dynamic>>();
+}
 
 /// Thin REST wrapper around the Home Assistant HTTP API. Pure transport: no
 /// knowledge of rooms, devices, or any other domain concept.
@@ -23,13 +37,7 @@ class HaRestClient {
     required String token,
   }) async {
     final body = await _get('/api/states', baseUrl: baseUrl, token: token);
-    final decoded = jsonDecode(body);
-    if (decoded is! List) {
-      throw const HaProtocolException(
-        'Unerwartetes Antwortformat von /api/states.',
-      );
-    }
-    return decoded.cast<Map<String, dynamic>>();
+    return compute(_decodeStates, body);
   }
 
   Future<void> callService({
