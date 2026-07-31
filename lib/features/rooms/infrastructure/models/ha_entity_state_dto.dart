@@ -26,16 +26,22 @@ class HaEntityStateDto {
   /// override) — this DTO only knows about the raw Home Assistant state.
   SmartHomeDevice toDomain({required String? roomId}) {
     final friendlyName = attributes['friendly_name'] as String?;
+    final attributeEnergy = _numericAttribute('today_energy_kwh');
+    final sensorEnergy = _sensorEnergyKwh;
     return SmartHomeDevice(
       id: entityId,
       name: friendlyName ?? _humanize(entityId),
       type: _mapType(domain),
       status: _isUnavailable ? 'Nicht verfügbar' : 'Online',
       // Home Assistant does not universally expose power/energy on every
-      // entity; best-effort read of common integration attribute names,
-      // 0 otherwise.
-      powerWatts: _numericAttribute('current_power_w') ?? 0,
-      dailyKwh: _numericAttribute('today_energy_kwh') ?? 0,
+      // entity; best-effort read of common integration attribute names on
+      // the entity itself, falling back to a standalone `sensor.*` entity's
+      // own state (device_class power/energy — the pattern most
+      // power-monitoring plugs, e.g. Shelly, actually use) — 0 otherwise.
+      powerWatts: _numericAttribute('current_power_w') ?? _sensorPowerWatts ?? 0,
+      dailyKwh: attributeEnergy ?? sensorEnergy ?? 0,
+      dailyKwhIsCumulative:
+          attributeEnergy == null && sensorEnergy != null && _isCumulativeEnergy,
       lastUpdated: 'gerade eben',
       roomId: roomId,
       isOn: _deriveIsOn(),
@@ -51,6 +57,35 @@ class HaEntityStateDto {
   double? _numericAttribute(String key) {
     final value = attributes[key];
     return value is num ? value.toDouble() : null;
+  }
+
+  String? get _deviceClass => attributes['device_class'] as String?;
+  String? get _unitOfMeasurement =>
+      attributes['unit_of_measurement'] as String?;
+  bool get _isCumulativeEnergy => attributes['state_class'] == 'total_increasing';
+
+  /// A standalone power-monitoring `sensor.*` entity (device_class `power`)
+  /// reports its wattage as its own state, not as an attribute on some
+  /// other entity.
+  double? get _sensorPowerWatts {
+    if (domain != 'sensor' || _deviceClass != 'power') return null;
+    final value = double.tryParse(state);
+    if (value == null) return null;
+    return _unitOfMeasurement == 'kW' ? value * 1000 : value;
+  }
+
+  /// Same idea for energy (device_class `energy`) — commonly a lifetime
+  /// meter reading (`state_class: total_increasing`), see
+  /// [SmartHomeDevice.dailyKwhIsCumulative].
+  double? get _sensorEnergyKwh {
+    if (domain != 'sensor' || _deviceClass != 'energy') return null;
+    final value = double.tryParse(state);
+    if (value == null) return null;
+    return switch (_unitOfMeasurement) {
+      'Wh' => value / 1000,
+      'MWh' => value * 1000,
+      _ => value,
+    };
   }
 
   bool _deriveIsOn() {

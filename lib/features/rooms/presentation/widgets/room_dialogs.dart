@@ -186,7 +186,9 @@ class _DeviceInfoDialogState extends State<DeviceInfoDialog> {
                 '${isOn ? widget.device.powerWatts.toStringAsFixed(0) : '0'} W',
           ),
           InfoRow(
-            label: 'Verbrauch heute',
+            label: widget.device.dailyKwhIsCumulative
+                ? 'Zählerstand gesamt'
+                : 'Verbrauch heute',
             value:
                 '${widget.device.dailyKwh.toStringAsFixed(2).replaceAll('.', ',')} kWh',
           ),

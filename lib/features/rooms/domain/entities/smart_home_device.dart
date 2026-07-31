@@ -34,6 +34,7 @@ class SmartHomeDevice {
     required this.powerWatts,
     required this.dailyKwh,
     required this.lastUpdated,
+    this.dailyKwhIsCumulative = false,
     this.roomId,
     this.switchCount = 0,
     this.isOn = true,
@@ -49,6 +50,13 @@ class SmartHomeDevice {
   final String status;
   final double powerWatts;
   final double dailyKwh;
+
+  /// `true` when [dailyKwh] is a monotonically increasing lifetime meter
+  /// reading (Home Assistant `state_class: total_increasing`, e.g. most
+  /// Shelly power plugs) rather than a value Home Assistant itself already
+  /// resets at midnight — callers that want "today's consumption" must diff
+  /// consecutive readings themselves instead of using [dailyKwh] as-is.
+  final bool dailyKwhIsCumulative;
   final String lastUpdated;
 
   /// Local room assignment (Home Assistant area heuristic or manual
@@ -102,6 +110,7 @@ class SmartHomeDevice {
     status: status,
     powerWatts: powerWatts,
     dailyKwh: dailyKwh,
+    dailyKwhIsCumulative: dailyKwhIsCumulative,
     lastUpdated: lastUpdated ?? this.lastUpdated,
     roomId: clearRoomId ? null : (roomId ?? this.roomId),
     switchCount: switchCount ?? this.switchCount,
