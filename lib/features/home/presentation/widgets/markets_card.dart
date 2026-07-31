@@ -59,11 +59,6 @@ class _MarketRow extends StatelessWidget {
             width: 68,
             child: Row(
               children: [
-                Text(
-                  symbol.label,
-                  style: TextStyle(color: color, fontWeight: FontWeight.w800),
-                ),
-                const SizedBox(width: 6),
                 Container(
                   width: 8,
                   height: 8,
@@ -71,6 +66,11 @@ class _MarketRow extends StatelessWidget {
                     color: quote?.isLive == true ? AppColors.green : Colors.red,
                     shape: BoxShape.circle,
                   ),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  symbol.label,
+                  style: TextStyle(color: color, fontWeight: FontWeight.w800),
                 ),
               ],
             ),
