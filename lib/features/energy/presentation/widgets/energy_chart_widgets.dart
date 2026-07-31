@@ -33,19 +33,21 @@ class ChartCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Verbrauchsverlauf',
-                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
-                  ),
-                  SizedBox(height: 5),
-                  Text(
-                    'Kilowattstunden',
-                    style: TextStyle(fontSize: 12, color: AppColors.muted),
-                  ),
-                ],
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Verbrauchsverlauf',
+                      style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+                    ),
+                    SizedBox(height: 5),
+                    Text(
+                      'Kilowattstunden',
+                      style: TextStyle(fontSize: 12, color: AppColors.muted),
+                    ),
+                  ],
+                ),
               ),
               if (showDetails)
                 TextButton(

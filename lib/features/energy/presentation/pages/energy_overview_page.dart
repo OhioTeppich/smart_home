@@ -5,7 +5,6 @@ import '../../application/energy_dashboard_controller.dart';
 import '../../domain/entities/energy_point.dart';
 import '../widgets/energy_chart_widgets.dart';
 import '../widgets/energy_metric_widgets.dart';
-import '../widgets/energy_summary_widgets.dart';
 
 class OverviewPage extends StatelessWidget {
   const OverviewPage({
@@ -32,78 +31,63 @@ class OverviewPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 8),
-          Wrap(
-            spacing: 14,
-            runSpacing: 14,
-            children: [
-              const MetricCard(
-                title: 'Verbrauch heute',
-                value: '6,14',
-                unit: 'kWh',
-                change: '+8,4 %',
-                icon: Icons.bolt_rounded,
-                color: AppColors.blue,
-              ),
-              const MetricCard(
-                title: 'Kosten heute',
-                value: '1,96',
-                unit: '€',
-                change: '+0,21 €',
-                icon: Icons.euro_rounded,
-                color: AppColors.peach,
-              ),
-              const MetricCard(
-                title: 'Aktuelle Leistung',
-                value: '810',
-                unit: 'W',
-                change: 'normal',
-                icon: Icons.speed_rounded,
-                color: AppColors.lavender,
-              ),
-              DeviceUsageCard(
-                label: 'Am meisten',
-                device: data.deviceUsages.first,
-                accent: AppColors.peach,
-              ),
-              DeviceUsageCard(
-                label: 'Am wenigsten',
-                device: data.deviceUsages.last,
-                accent: AppColors.green,
-              ),
-            ],
-          ),
-          const SizedBox(height: 18),
           LayoutBuilder(
             builder: (context, constraints) {
               final stacked = constraints.maxWidth < 780;
               final chart = ChartCard(period: period, onDetails: onDetails);
-              const side = Column(
+              final widgets = Wrap(
+                spacing: 14,
+                runSpacing: 14,
                 children: [
-                  SizedBox(height: 170, child: ComparisonCard()),
-                  SizedBox(height: 18),
-                  SizedBox(height: 154, child: GoalCard()),
+                  const MetricCard(
+                    title: 'Verbrauch heute',
+                    value: '6,14',
+                    unit: 'kWh',
+                    change: '+8,4 %',
+                    icon: Icons.bolt_rounded,
+                    color: AppColors.blue,
+                  ),
+                  const MetricCard(
+                    title: 'Kosten heute',
+                    value: '1,96',
+                    unit: '€',
+                    change: '+0,21 €',
+                    icon: Icons.euro_rounded,
+                    color: AppColors.peach,
+                  ),
+                  const MetricCard(
+                    title: 'Aktuelle Leistung',
+                    value: '810',
+                    unit: 'W',
+                    change: 'normal',
+                    icon: Icons.speed_rounded,
+                    color: AppColors.lavender,
+                  ),
+                  DeviceUsageCard(
+                    label: 'Am meisten',
+                    device: data.deviceUsages.first,
+                    accent: AppColors.peach,
+                  ),
+                  DeviceUsageCard(
+                    label: 'Am wenigsten',
+                    device: data.deviceUsages.last,
+                    accent: AppColors.green,
+                  ),
                 ],
               );
               return stacked
-                  ? Column(children: [chart, const SizedBox(height: 18), side])
+                  ? Column(
+                      children: [chart, const SizedBox(height: 18), widgets],
+                    )
                   : Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(flex: 3, child: chart),
+                        Expanded(child: chart),
                         const SizedBox(width: 18),
-                        Expanded(flex: 2, child: side),
+                        Expanded(child: widgets),
                       ],
                     );
             },
-          ),
-          const SizedBox(height: 18),
-          const Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(child: PeakCard()),
-              SizedBox(width: 18),
-              Expanded(child: ForecastCard()),
-            ],
           ),
         ],
       ),

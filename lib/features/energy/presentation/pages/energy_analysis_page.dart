@@ -47,6 +47,31 @@ class AnalysisPage extends StatelessWidget {
             Expanded(child: ForecastCard()),
           ],
         ),
+        const SizedBox(height: 18),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final stacked = constraints.maxWidth < 780;
+            const side = Column(
+              children: [
+                SizedBox(height: 170, child: ComparisonCard()),
+                SizedBox(height: 18),
+                SizedBox(height: 154, child: GoalCard()),
+              ],
+            );
+            return stacked
+                ? const Column(
+                    children: [PeakCard(), SizedBox(height: 18), side],
+                  )
+                : const Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(child: PeakCard()),
+                      SizedBox(width: 18),
+                      Expanded(child: side),
+                    ],
+                  );
+          },
+        ),
       ],
     ),
   );

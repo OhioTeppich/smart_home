@@ -60,7 +60,7 @@ class _AppShellState extends State<AppShell> {
             ),
             child: SafeArea(
               child: Padding(
-                padding: EdgeInsets.only(top: compact ? 108 : 124),
+                padding: const EdgeInsets.only(top: 96, bottom: 16),
                 child: _buildPage(compact, period),
               ),
             ),
@@ -233,10 +233,7 @@ class AppNavigationBar extends StatelessWidget {
                 onSectionChanged: onSectionChanged,
               ),
               const Spacer(),
-              if (trailing != null) ...[
-                trailing!,
-                const SizedBox(width: 10),
-              ],
+              if (trailing != null) ...[trailing!, const SizedBox(width: 10)],
               Container(width: 1, height: 34, color: AppColors.line),
               const SizedBox(width: 10),
               IconButton(
@@ -378,9 +375,7 @@ class _RoomsNavItemState extends State<_RoomsNavItem> {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 180),
             height: 56,
-            padding: EdgeInsets.symmetric(
-              horizontal: widget.compact ? 14 : 17,
-            ),
+            padding: EdgeInsets.symmetric(horizontal: widget.compact ? 14 : 17),
             decoration: BoxDecoration(
               color: selected ? AppColors.ink : Colors.transparent,
               borderRadius: BorderRadius.circular(16),

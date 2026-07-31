@@ -65,9 +65,12 @@ class PeakCard extends StatelessWidget {
       children: [
         Icon(Icons.trending_up_rounded, color: AppColors.brown),
         SizedBox(width: 14),
-        Text(
-          'Höchste Lastspitze  ·  980 W',
-          style: TextStyle(fontWeight: FontWeight.w800),
+        Expanded(
+          child: Text(
+            'Höchste Lastspitze  ·  980 W',
+            style: TextStyle(fontWeight: FontWeight.w800),
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
       ],
     ),
@@ -82,9 +85,12 @@ class ForecastCard extends StatelessWidget {
       children: [
         Icon(Icons.auto_graph_rounded, color: AppColors.brown),
         SizedBox(width: 14),
-        Text(
-          'Monatsprognose  ·  58,40 €',
-          style: TextStyle(fontWeight: FontWeight.w800),
+        Expanded(
+          child: Text(
+            'Monatsprognose  ·  58,40 €',
+            style: TextStyle(fontWeight: FontWeight.w800),
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
       ],
     ),
