@@ -44,6 +44,13 @@ void main() {
     await tester.tap(find.text('Details  →'));
     await tester.pumpAndSettle();
 
+    expect(find.text('Übersicht'), findsOneWidget);
+
+    // Analysis now spreads its sections across horizontally swipeable
+    // panels; "Verbrauch nach Tageszeit" lives on the second panel.
+    await tester.drag(find.byType(PageView).last, const Offset(-800, 0));
+    await tester.pumpAndSettle();
+
     expect(find.text('Verbrauch nach Tageszeit'), findsOneWidget);
   });
 
