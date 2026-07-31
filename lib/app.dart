@@ -22,6 +22,10 @@ import 'features/rooms/application/smart_home_event.dart';
 import 'features/rooms/application/smart_home_state.dart';
 import 'features/rooms/infrastructure/repositories/home_assistant_smart_home_repository.dart';
 import 'features/home/application/home_controller.dart';
+import 'features/spotify/application/spotify_bloc.dart';
+import 'features/spotify/application/spotify_event.dart';
+import 'features/spotify/infrastructure/data_sources/spotify_local_data_source.dart';
+import 'features/spotify/infrastructure/repositories/spotify_repository_impl.dart';
 
 class SmartHomeApp extends StatelessWidget {
   const SmartHomeApp({super.key});
@@ -50,6 +54,11 @@ class SmartHomeApp extends StatelessWidget {
             create: (context) => QuickAccessBloc(
               QuickAccessRepositoryImpl(QuickAccessLocalDataSource()),
             )..add(const QuickAccessStarted()),
+          ),
+          BlocProvider(
+            create: (context) => SpotifyBloc(
+              SpotifyRepositoryImpl(SpotifyLocalDataSource()),
+            )..add(const SpotifyStarted()),
           ),
         ],
         // Both blocs must live above `MaterialApp`, not inside `home:`.
