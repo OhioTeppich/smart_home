@@ -26,4 +26,8 @@ abstract class SpotifyRepository {
   /// Throws a [SpotifyFailure] subtype (e.g. no active device, Premium
   /// required) on failure. Returns normally on success.
   Future<void> sendPlaybackCommand(SpotifyPlaybackCommand command);
+
+  /// [percent] is clamped to 0-100 by the caller before this is invoked.
+  /// Throws a [SpotifyFailure] subtype on failure.
+  Future<void> setVolume(int percent);
 }

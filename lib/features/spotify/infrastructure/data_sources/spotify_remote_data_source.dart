@@ -12,13 +12,16 @@ class SpotifyRemoteDataSource {
 
   final http.Client _http;
 
+  /// Uses `/v1/me/player` rather than the narrower
+  /// `/v1/me/player/currently-playing` so the response also carries the
+  /// active device's `volume_percent` for the Lauter/Leiser controls.
   /// Returns `null` when nothing is currently playing (HTTP 204).
   Future<SpotifyCurrentlyPlayingDto?> fetchCurrentlyPlaying(
     String accessToken,
   ) async {
     final response = await _http
         .get(
-          Uri.https('api.spotify.com', '/v1/me/player/currently-playing'),
+          Uri.https('api.spotify.com', '/v1/me/player'),
           headers: {'Authorization': 'Bearer $accessToken'},
         )
         .timeout(const Duration(seconds: 10));
@@ -53,7 +56,28 @@ class SpotifyRemoteDataSource {
       SpotifyPlaybackCommand.skipPrevious => _http.post(uri, headers: headers),
     }.timeout(const Duration(seconds: 10));
 
-    if (response.statusCode == 204) return;
+    _checkCommandResponse(response);
+  }
+
+  Future<void> setVolume(String accessToken, int volumePercent) async {
+    final response = await _http
+        .put(
+          Uri.https('api.spotify.com', '/v1/me/player/volume', {
+            'volume_percent': '$volumePercent',
+          }),
+          headers: {'Authorization': 'Bearer $accessToken'},
+        )
+        .timeout(const Duration(seconds: 10));
+
+    _checkCommandResponse(response);
+  }
+
+  /// Spotify's own docs promise HTTP 204 for these player-control endpoints,
+  /// but in practice some clients/devices report back 200 with an empty
+  /// body instead — treat both as success rather than surfacing a spurious
+  /// "HTTP 200" error for a command that actually worked.
+  void _checkCommandResponse(http.Response response) {
+    if (response.statusCode == 200 || response.statusCode == 204) return;
     if (response.statusCode == 401) {
       throw const SpotifyUnauthenticatedFailure();
     }

@@ -9,6 +9,7 @@ class SpotifyCurrentlyPlayingDto {
     required this.albumName,
     required this.albumArtUrl,
     required this.durationMs,
+    required this.volumePercent,
   });
 
   /// Returns `null` when the payload has no playable `item` (e.g. an ad, a
@@ -20,6 +21,7 @@ class SpotifyCurrentlyPlayingDto {
     final album = item['album'] as Map<String, dynamic>?;
     final images = (album?['images'] as List?) ?? const [];
     final artists = (item['artists'] as List?) ?? const [];
+    final device = json['device'] as Map<String, dynamic>?;
     return SpotifyCurrentlyPlayingDto(
       isPlaying: json['is_playing'] as bool? ?? false,
       progressMs: (json['progress_ms'] as num?)?.toInt() ?? 0,
@@ -32,6 +34,7 @@ class SpotifyCurrentlyPlayingDto {
           ? null
           : (images.first as Map<String, dynamic>)['url'] as String?,
       durationMs: (item['duration_ms'] as num?)?.toInt() ?? 0,
+      volumePercent: (device?['volume_percent'] as num?)?.toInt(),
     );
   }
 
@@ -43,6 +46,10 @@ class SpotifyCurrentlyPlayingDto {
   final String? albumArtUrl;
   final int durationMs;
 
+  /// `null` when the active device doesn't report a volume (some Spotify
+  /// Connect speakers don't).
+  final int? volumePercent;
+
   SpotifyNowPlaying toDomain() => SpotifyNowPlaying(
     track: SpotifyTrack(
       name: trackName,
@@ -53,5 +60,6 @@ class SpotifyCurrentlyPlayingDto {
     ),
     isPlaying: isPlaying,
     progressMs: progressMs,
+    volumePercent: volumePercent,
   );
 }

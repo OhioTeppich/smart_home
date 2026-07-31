@@ -21,6 +21,7 @@ void main() {
           {'name': 'Artist Two'},
         ],
       },
+      'device': {'volume_percent': 42},
     });
 
     expect(dto, isNotNull);
@@ -31,11 +32,29 @@ void main() {
     expect(dto.albumName, 'Album Name');
     expect(dto.albumArtUrl, 'https://example.com/big.jpg');
     expect(dto.artistNames, ['Artist One', 'Artist Two']);
+    expect(dto.volumePercent, 42);
 
     final domain = dto.toDomain();
     expect(domain.track.artistsLabel, 'Artist One, Artist Two');
     expect(domain.isPlaying, isTrue);
     expect(domain.progressMs, 12345);
+    expect(domain.volumePercent, 42);
+  });
+
+  test('fromJson leaves volumePercent null when device is absent', () {
+    final dto = SpotifyCurrentlyPlayingDto.fromJson({
+      'is_playing': true,
+      'progress_ms': 0,
+      'item': {
+        'name': 'Song',
+        'duration_ms': 1000,
+        'album': {'name': 'Album', 'images': <Map<String, dynamic>>[]},
+        'artists': <Map<String, dynamic>>[],
+      },
+    });
+
+    expect(dto, isNotNull);
+    expect(dto!.volumePercent, isNull);
   });
 
   test('fromJson returns null when item is missing (ad/no track)', () {

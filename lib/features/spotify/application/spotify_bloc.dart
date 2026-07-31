@@ -16,6 +16,7 @@ class SpotifyBloc extends Bloc<SpotifyEvent, SpotifyState> {
     on<SpotifyLogoutRequested>(_onLogoutRequested);
     on<SpotifyPollTicked>(_onPollTicked);
     on<SpotifyPlaybackCommandRequested>(_onPlaybackCommandRequested);
+    on<SpotifyVolumeChangeRequested>(_onVolumeChangeRequested);
   }
 
   final SpotifyRepository _repository;
@@ -108,10 +109,38 @@ class SpotifyBloc extends Bloc<SpotifyEvent, SpotifyState> {
   Future<void> _onPlaybackCommandRequested(
     SpotifyPlaybackCommandRequested event,
     Emitter<SpotifyState> emit,
+  ) => _runMutatingCommand(
+    emit,
+    () => _repository.sendPlaybackCommand(event.command),
+  );
+
+  Future<void> _onVolumeChangeRequested(
+    SpotifyVolumeChangeRequested event,
+    Emitter<SpotifyState> emit,
+  ) async {
+    final current = state;
+    if (current is! SpotifyPlaying || current.nowPlaying.volumePercent == null) {
+      return;
+    }
+    final target = (current.nowPlaying.volumePercent! + event.delta).clamp(
+      0,
+      100,
+    );
+    await _runMutatingCommand(emit, () => _repository.setVolume(target));
+  }
+
+  /// Shared by playback commands and volume changes: run [action], surface
+  /// a transient [SpotifyPlaying.commandError] on failure (without losing
+  /// the currently displayed track), then re-poll shortly after — instead
+  /// of waiting for the next scheduled tick (up to 8s away) — so the UI
+  /// reflects the actual new state quickly either way.
+  Future<void> _runMutatingCommand(
+    Emitter<SpotifyState> emit,
+    Future<void> Function() action,
   ) async {
     final current = state;
     try {
-      await _repository.sendPlaybackCommand(event.command);
+      await action();
     } on SpotifyUnauthenticatedFailure {
       _pollTimer?.cancel();
       emit(SpotifyUnauthenticated(authConfig: state.authConfig));
@@ -127,8 +156,6 @@ class SpotifyBloc extends Bloc<SpotifyEvent, SpotifyState> {
         );
       }
     }
-    // Give Spotify a moment to apply the command before re-polling, instead
-    // of waiting for the next scheduled tick (up to 8s away).
     await Future.delayed(const Duration(milliseconds: 400));
     add(const SpotifyPollTicked());
   }

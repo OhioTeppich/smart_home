@@ -8,17 +8,19 @@ import 'package:smart_home/features/spotify/domain/failures/spotify_failure.dart
 import 'package:smart_home/features/spotify/domain/repositories/spotify_repository.dart';
 import 'package:smart_home/features/spotify/domain/value_objects/spotify_auth_config.dart';
 
-SpotifyNowPlaying _track({bool isPlaying = true}) => SpotifyNowPlaying(
-  track: const SpotifyTrack(
-    name: 'Song',
-    artistNames: ['Artist'],
-    albumName: 'Album',
-    albumArtUrl: null,
-    durationMs: 200000,
-  ),
-  isPlaying: isPlaying,
-  progressMs: 1000,
-);
+SpotifyNowPlaying _track({bool isPlaying = true, int? volumePercent}) =>
+    SpotifyNowPlaying(
+      track: const SpotifyTrack(
+        name: 'Song',
+        artistNames: ['Artist'],
+        albumName: 'Album',
+        albumArtUrl: null,
+        durationMs: 200000,
+      ),
+      isPlaying: isPlaying,
+      progressMs: 1000,
+      volumePercent: volumePercent,
+    );
 
 class _FakeSpotifyRepository implements SpotifyRepository {
   SpotifyAuthConfig? config;
@@ -29,6 +31,7 @@ class _FakeSpotifyRepository implements SpotifyRepository {
   SpotifyNowPlaying? nowPlaying;
   final calls = <String>[];
   final commands = <SpotifyPlaybackCommand>[];
+  final volumeChanges = <int>[];
 
   @override
   Future<SpotifyAuthConfig?> loadAuthConfig() async => config;
@@ -65,6 +68,12 @@ class _FakeSpotifyRepository implements SpotifyRepository {
   @override
   Future<void> sendPlaybackCommand(SpotifyPlaybackCommand command) async {
     commands.add(command);
+    if (commandError != null) throw commandError!;
+  }
+
+  @override
+  Future<void> setVolume(int percent) async {
+    volumeChanges.add(percent);
     if (commandError != null) throw commandError!;
   }
 }
@@ -266,5 +275,31 @@ void main() {
     await Future.delayed(Duration.zero);
 
     expect(bloc.state, isA<SpotifyUnauthenticated>());
+  });
+
+  test('SpotifyVolumeChangeRequested adds the delta to the known volume, clamped', () async {
+    repository.authenticated = true;
+    repository.nowPlaying = _track(volumePercent: 95);
+    bloc = SpotifyBloc(repository);
+    bloc.add(const SpotifyStarted());
+    await Future.delayed(Duration.zero);
+
+    bloc.add(const SpotifyVolumeChangeRequested(10));
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    expect(repository.volumeChanges, [100]);
+  });
+
+  test('SpotifyVolumeChangeRequested is a no-op when volume is unknown', () async {
+    repository.authenticated = true;
+    repository.nowPlaying = _track();
+    bloc = SpotifyBloc(repository);
+    bloc.add(const SpotifyStarted());
+    await Future.delayed(Duration.zero);
+
+    bloc.add(const SpotifyVolumeChangeRequested(10));
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    expect(repository.volumeChanges, isEmpty);
   });
 }

@@ -20,7 +20,7 @@ class SpotifyAuthDataSource {
   static const _authorizeHost = 'accounts.spotify.com';
   static const _tokenUri = 'https://accounts.spotify.com/api/token';
   static const _scope =
-      'user-read-currently-playing user-modify-playback-state';
+      'user-read-playback-state user-modify-playback-state';
 
   Future<SpotifyTokenResponseDto> authenticate(
     SpotifyAuthConfig config,

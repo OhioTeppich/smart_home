@@ -34,10 +34,7 @@ class SpotifyNowPlayingCard extends StatelessWidget {
             SpotifyInitial() || SpotifyAuthenticating() =>
               const _SpotifyLoading(),
             SpotifyUnauthenticated() => const _SpotifyConnectPrompt(),
-            SpotifyIdle() => const Text(
-              'Nichts wird abgespielt',
-              style: TextStyle(color: AppColors.muted),
-            ),
+            SpotifyIdle() => const _SpotifyEmptyState(),
             SpotifyError() => const Text(
               'Spotify ist derzeit nicht erreichbar.',
               style: TextStyle(color: AppColors.muted),
@@ -62,6 +59,33 @@ class _SpotifyLoading extends StatelessWidget {
         width: 22,
         height: 22,
         child: CircularProgressIndicator(strokeWidth: 2),
+      ),
+    ),
+  );
+}
+
+class _SpotifyEmptyState extends StatelessWidget {
+  const _SpotifyEmptyState();
+
+  @override
+  Widget build(BuildContext context) => const Center(
+    child: Padding(
+      padding: EdgeInsets.symmetric(vertical: 16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.music_off_rounded, size: 28, color: AppColors.muted),
+          SizedBox(height: 8),
+          Text(
+            'Gerade läuft nichts',
+            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+          ),
+          SizedBox(height: 2),
+          Text(
+            'Wiedergabe auf einem Gerät starten',
+            style: TextStyle(color: AppColors.muted, fontSize: 11),
+          ),
+        ],
       ),
     ),
   );
@@ -199,6 +223,37 @@ class _SpotifyTrackView extends StatelessWidget {
             ),
           ],
         ),
+        if (nowPlaying.volumePercent != null)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _SpotifyControlButton(
+                icon: Icons.volume_down_rounded,
+                size: 18,
+                onPressed: () => context.read<SpotifyBloc>().add(
+                  const SpotifyVolumeChangeRequested(-10),
+                ),
+              ),
+              SizedBox(
+                width: 30,
+                child: Text(
+                  '${nowPlaying.volumePercent}%',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: AppColors.muted,
+                    fontSize: 11,
+                  ),
+                ),
+              ),
+              _SpotifyControlButton(
+                icon: Icons.volume_up_rounded,
+                size: 18,
+                onPressed: () => context.read<SpotifyBloc>().add(
+                  const SpotifyVolumeChangeRequested(10),
+                ),
+              ),
+            ],
+          ),
         if (commandError != null)
           Padding(
             padding: const EdgeInsets.only(top: 4),
@@ -214,15 +269,20 @@ class _SpotifyTrackView extends StatelessWidget {
 }
 
 class _SpotifyControlButton extends StatelessWidget {
-  const _SpotifyControlButton({required this.icon, required this.onPressed});
+  const _SpotifyControlButton({
+    required this.icon,
+    required this.onPressed,
+    this.size = 24,
+  });
 
   final IconData icon;
   final VoidCallback onPressed;
+  final double size;
 
   @override
   Widget build(BuildContext context) => IconButton(
     onPressed: onPressed,
-    icon: Icon(icon, color: AppColors.blueDark),
+    icon: Icon(icon, color: AppColors.blueDark, size: size),
     visualDensity: VisualDensity.compact,
   );
 }

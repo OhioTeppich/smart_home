@@ -47,3 +47,14 @@ class SpotifyPlaybackCommandRequested extends SpotifyEvent {
   @override
   List<Object?> get props => [command];
 }
+
+/// [delta] is added to the last known volume (e.g. -10/+10 for
+/// Leiser/Lauter) and clamped to 0-100 before being sent.
+class SpotifyVolumeChangeRequested extends SpotifyEvent {
+  const SpotifyVolumeChangeRequested(this.delta);
+
+  final int delta;
+
+  @override
+  List<Object?> get props => [delta];
+}

@@ -97,6 +97,17 @@ class SpotifyRepositoryImpl implements SpotifyRepository {
         }
       });
 
+  @override
+  Future<void> setVolume(int percent) => _guard(() async {
+    final token = await _validAccessToken();
+    try {
+      await _remoteDataSource.setVolume(token, percent);
+    } on SpotifyUnauthenticatedFailure {
+      final refreshed = await _validAccessToken(force: true);
+      await _remoteDataSource.setVolume(refreshed, percent);
+    }
+  });
+
   Future<String> _validAccessToken({bool force = false}) async {
     if (!force &&
         _accessToken != null &&

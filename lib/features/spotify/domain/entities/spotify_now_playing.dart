@@ -32,12 +32,16 @@ class SpotifyNowPlaying extends Equatable {
     required this.track,
     required this.isPlaying,
     required this.progressMs,
+    this.volumePercent,
   });
 
   final SpotifyTrack track;
   final bool isPlaying;
   final int progressMs;
 
+  /// `null` when the active device doesn't report a volume.
+  final int? volumePercent;
+
   @override
-  List<Object?> get props => [track, isPlaying, progressMs];
+  List<Object?> get props => [track, isPlaying, progressMs, volumePercent];
 }
