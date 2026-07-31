@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../features/energy/presentation/pages/energy_price_settings_page.dart';
 import '../../features/ha_connection/presentation/pages/ha_connection_settings_page.dart';
+import '../../features/parcel_tracking/presentation/pages/parcel_list_page.dart';
 import '../../features/quick_access/presentation/pages/quick_access_settings_page.dart';
 import '../../features/spotify/presentation/pages/spotify_settings_page.dart';
 
@@ -57,6 +58,14 @@ class SettingsHubPage extends StatelessWidget {
           trailing: const Icon(Icons.chevron_right_rounded),
           onTap: () => Navigator.of(context).push<void>(
             MaterialPageRoute(builder: (_) => const SpotifySettingsPage()),
+          ),
+        ),
+        ListTile(
+          leading: const Icon(Icons.local_shipping_outlined),
+          title: const Text('Pakete verwalten'),
+          trailing: const Icon(Icons.chevron_right_rounded),
+          onTap: () => Navigator.of(context).push<void>(
+            MaterialPageRoute(builder: (_) => const ParcelListPage()),
           ),
         ),
       ],

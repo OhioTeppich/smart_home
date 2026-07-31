@@ -13,6 +13,10 @@ import 'features/ha_connection/application/ha_connection_state.dart';
 import 'features/ha_connection/domain/value_objects/ha_connection_config.dart';
 import 'features/ha_connection/infrastructure/data_sources/ha_connection_local_data_source.dart';
 import 'features/ha_connection/infrastructure/repositories/ha_connection_repository_impl.dart';
+import 'features/parcel_tracking/application/parcel_tracking_bloc.dart';
+import 'features/parcel_tracking/application/parcel_tracking_event.dart';
+import 'features/parcel_tracking/infrastructure/data_sources/parcel_local_data_source.dart';
+import 'features/parcel_tracking/infrastructure/repositories/track17_parcel_repository.dart';
 import 'features/quick_access/application/quick_access_bloc.dart';
 import 'features/quick_access/application/quick_access_event.dart';
 import 'features/quick_access/infrastructure/data_sources/quick_access_local_data_source.dart';
@@ -59,6 +63,11 @@ class SmartHomeApp extends StatelessWidget {
             create: (context) => SpotifyBloc(
               SpotifyRepositoryImpl(SpotifyLocalDataSource()),
             )..add(const SpotifyStarted()),
+          ),
+          BlocProvider(
+            create: (context) => ParcelTrackingBloc(
+              Track17ParcelRepository(ParcelLocalDataSource()),
+            )..add(const ParcelTrackingStarted()),
           ),
         ],
         // Both blocs must live above `MaterialApp`, not inside `home:`.

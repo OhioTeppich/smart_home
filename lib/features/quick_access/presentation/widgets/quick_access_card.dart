@@ -13,16 +13,10 @@ import '../pages/quick_access_settings_page.dart';
 import 'quick_access_cover_tile.dart';
 import 'quick_access_toggle_tile.dart';
 
-/// Uniform tile width. At the 780px reference width where `HomeOverview`'s
-/// second row activates, `HorizontalPageScaffold` subtracts 44+52 = 96px of
-/// page padding, leaving 684px (see `kQuickAccessMaxDevices` in
-/// `quick_access_limits.dart` for the full arithmetic):
-///   4 * 160 + 3 * 12 = 676 <= 684  (fits)
-///   5 * 160 + 4 * 12 = 848 >  684  (would wrap)
+/// Gutter between tiles in the 2x2 grid, both horizontally and vertically.
 /// The Rollladen tile stacks its three mini buttons under icon + name
 /// (`QuickAccessCoverTile`) instead of putting everything in one row, so the
 /// buttons can stay a comfortable tap size without needing a wider tile.
-const kQuickAccessTileWidth = 160.0;
 const kQuickAccessTileGap = 12.0;
 
 /// What `QuickAccessCard` actually needs out of `SmartHomeBloc`'s state,
@@ -107,23 +101,46 @@ class QuickAccessCard extends StatelessWidget {
       );
     }
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      reverse: true,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (final device in resolved) ...[
-            SizedBox(
-              width: kQuickAccessTileWidth,
-              child: device.type == SmartHomeDeviceType.cover
-                  ? QuickAccessCoverTile(device: device)
-                  : QuickAccessToggleTile(device: device),
+    return _QuickAccessGrid(devices: resolved);
+  }
+}
+
+/// Lays [devices] out as a 2-column grid (two rows of two), padding an odd
+/// trailing slot with an empty cell so the grid stays balanced.
+class _QuickAccessGrid extends StatelessWidget {
+  const _QuickAccessGrid({required this.devices});
+
+  final List<SmartHomeDevice> devices;
+
+  @override
+  Widget build(BuildContext context) {
+    final rows = <List<SmartHomeDevice?>>[
+      for (var i = 0; i < devices.length; i += 2)
+        [devices[i], i + 1 < devices.length ? devices[i + 1] : null],
+    ];
+    return Column(
+      children: [
+        for (final row in rows) ...[
+          Expanded(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(child: _tile(row[0])),
+                const SizedBox(width: kQuickAccessTileGap),
+                Expanded(child: _tile(row[1])),
+              ],
             ),
-            if (device != resolved.last) const SizedBox(width: kQuickAccessTileGap),
-          ],
+          ),
+          if (row != rows.last) const SizedBox(height: kQuickAccessTileGap),
         ],
-      ),
+      ],
     );
+  }
+
+  Widget _tile(SmartHomeDevice? device) {
+    if (device == null) return const SizedBox.shrink();
+    return device.type == SmartHomeDeviceType.cover
+        ? QuickAccessCoverTile(device: device)
+        : QuickAccessToggleTile(device: device);
   }
 }

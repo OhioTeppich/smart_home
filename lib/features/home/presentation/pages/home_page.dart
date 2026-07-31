@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/widgets/horizontal_page_scaffold.dart';
+import '../../../parcel_tracking/presentation/widgets/parcel_tracking_card.dart';
 import '../../../quick_access/presentation/widgets/quick_access_card.dart';
 import '../../../spotify/presentation/widgets/spotify_now_playing_card.dart';
 import '../widgets/home_overview.dart';
@@ -19,6 +20,7 @@ class HomePage extends StatelessWidget {
               WeatherCard(),
               MarketsCard(),
               SpotifyNowPlayingCard(),
+              ParcelTrackingCard(),
               QuickAccessCard(),
             ]
           : const [HomeOverview()],

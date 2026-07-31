@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 
+import '../../../parcel_tracking/presentation/widgets/parcel_tracking_card.dart';
 import '../../../quick_access/presentation/widgets/quick_access_card.dart';
 import '../../../spotify/presentation/widgets/spotify_now_playing_card.dart';
 import 'markets_card.dart';
 import 'weather_card.dart';
 
-/// Wide-screen layout: weather, markets and Spotify side by side, with the
-/// Schnellzugriff widget in its own full-width row below. On narrow screens
-/// each card becomes its own horizontally swipeable panel instead (see
-/// `HomePage`). Spotify gets a fixed width rather than `Expanded` so the
-/// existing Wetter/Märkte columns stay pixel-identical to before.
+/// Wide-screen layout: weather, markets and Spotify side by side, with
+/// Paket-Tracking and Schnellzugriff sharing the row below. On narrow
+/// screens each card becomes its own horizontally swipeable panel instead
+/// (see `HomePage`). Spotify gets a fixed width rather than `Expanded` so
+/// the existing Wetter/Märkte columns stay pixel-identical to before.
 class HomeOverview extends StatelessWidget {
   const HomeOverview({super.key});
 
@@ -30,7 +31,17 @@ class HomeOverview extends StatelessWidget {
         ),
       ),
       const SizedBox(height: 14),
-      const SizedBox(height: 96, child: QuickAccessCard()),
+      SizedBox(
+        height: 220,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: const [
+            Expanded(child: ParcelTrackingCard()),
+            SizedBox(width: 14),
+            Expanded(child: QuickAccessCard()),
+          ],
+        ),
+      ),
     ],
   );
 }
