@@ -68,7 +68,7 @@ class ChartCard extends StatelessWidget {
             child: CustomPaint(
               painter: EnergyChartPainter(
                 points: points,
-                highlightIndex: period == Period.day ? 9 : points.length - 1,
+                highlightIndex: points.length - 1,
               ),
               child: const SizedBox.expand(),
             ),
@@ -89,7 +89,8 @@ class EnergyChartPainter extends CustomPainter {
     const left = 34.0, bottom = 27.0;
     final chartWidth = size.width - left - 6;
     final chartHeight = size.height - bottom - 8;
-    final max = points.map((point) => point.kwh).reduce(math.max) * 1.25;
+    final maxKwh = points.map((point) => point.kwh).reduce(math.max);
+    final max = maxKwh <= 0 ? 1.0 : maxKwh * 1.25;
     final gridPaint = Paint()
       ..color = AppColors.line
       ..strokeWidth = 1;

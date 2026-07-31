@@ -31,7 +31,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Verbrauch heute'), findsOneWidget);
-    expect(find.text('6,14'), findsOneWidget);
+    // No Home Assistant connection configured in this test: real data path,
+    // zero tracked devices, so the metric is a real "0,00", not mock data.
+    expect(find.text('0,00'), findsOneWidget);
   });
 
   testWidgets('can navigate to analysis', (tester) async {

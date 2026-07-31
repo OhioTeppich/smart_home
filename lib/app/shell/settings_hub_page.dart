@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../features/energy/presentation/pages/energy_price_settings_page.dart';
 import '../../features/ha_connection/presentation/pages/ha_connection_settings_page.dart';
 import '../../features/quick_access/presentation/pages/quick_access_settings_page.dart';
 
@@ -36,6 +37,16 @@ class SettingsHubPage extends StatelessWidget {
           onTap: () => Navigator.of(context).push<void>(
             MaterialPageRoute(
               builder: (_) => const QuickAccessSettingsPage(),
+            ),
+          ),
+        ),
+        ListTile(
+          leading: const Icon(Icons.euro_rounded),
+          title: const Text('Energiepreis'),
+          trailing: const Icon(Icons.chevron_right_rounded),
+          onTap: () => Navigator.of(context).push<void>(
+            MaterialPageRoute(
+              builder: (_) => const EnergyPriceSettingsPage(),
             ),
           ),
         ),

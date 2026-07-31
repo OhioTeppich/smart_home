@@ -166,10 +166,10 @@ class DeviceUsageListCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
+                const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
@@ -187,8 +187,8 @@ class DeviceUsageListCard extends StatelessWidget {
                   ],
                 ),
                 Text(
-                  '6 Geräte',
-                  style: TextStyle(
+                  '${devices.length} Geräte',
+                  style: const TextStyle(
                     fontSize: 12,
                     color: AppColors.muted,
                     fontWeight: FontWeight.w600,

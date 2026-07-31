@@ -5,7 +5,8 @@ import 'core/theme/app_theme.dart';
 import 'app/app_scale.dart';
 import 'app/shell/app_shell.dart';
 import 'features/energy/application/energy_dashboard_controller.dart';
-import 'features/energy/infrastructure/repositories/in_memory_energy_repository.dart';
+import 'features/energy/infrastructure/data_sources/energy_local_data_source.dart';
+import 'features/energy/infrastructure/repositories/energy_repository_impl.dart';
 import 'features/ha_connection/application/ha_connection_bloc.dart';
 import 'features/ha_connection/application/ha_connection_event.dart';
 import 'features/ha_connection/application/ha_connection_state.dart';
@@ -18,6 +19,7 @@ import 'features/quick_access/infrastructure/data_sources/quick_access_local_dat
 import 'features/quick_access/infrastructure/repositories/quick_access_repository_impl.dart';
 import 'features/rooms/application/smart_home_bloc.dart';
 import 'features/rooms/application/smart_home_event.dart';
+import 'features/rooms/application/smart_home_state.dart';
 import 'features/rooms/infrastructure/repositories/home_assistant_smart_home_repository.dart';
 import 'features/home/application/home_controller.dart';
 
@@ -50,6 +52,9 @@ class SmartHomeApp extends StatelessWidget {
         buildWhen: (previous, current) => _configOf(previous) != _configOf(current),
         builder: (context, state) {
           final config = _configOf(state);
+          final energyController = EnergyDashboardController(
+            EnergyRepositoryImpl(EnergyLocalDataSource()),
+          )..start();
           return BlocProvider<SmartHomeBloc>(
             // A changed key makes Flutter tear down the old provider
             // element (closing the old bloc) and create a fresh one,
@@ -65,13 +70,18 @@ class SmartHomeApp extends StatelessWidget {
               theme: AppTheme.light,
               builder: (context, child) =>
                   AppScale(scale: 1.12, child: child ?? const SizedBox.shrink()),
-              home: EnergyScope(
-                controller: EnergyDashboardController(
-                  const InMemoryEnergyRepository(),
-                ),
-                child: HomeScope(
-                  controller: HomeController()..start(),
-                  child: const AppShell(),
+              home: BlocListener<SmartHomeBloc, SmartHomeState>(
+                listener: (context, state) {
+                  if (state is SmartHomeConnected) {
+                    energyController.updateDevices(state.devices);
+                  }
+                },
+                child: EnergyScope(
+                  controller: energyController,
+                  child: HomeScope(
+                    controller: HomeController()..start(),
+                    child: const AppShell(),
+                  ),
                 ),
               ),
             ),
