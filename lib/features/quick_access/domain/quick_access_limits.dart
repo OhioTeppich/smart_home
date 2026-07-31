@@ -3,4 +3,4 @@
 /// (`HomeOverview`'s second row, which only renders at width >= 780) never
 /// wraps to a second line — see the tile-width arithmetic next to
 /// `kQuickAccessTileWidth` in `quick_access_card.dart`.
-const kQuickAccessMaxDevices = 3;
+const kQuickAccessMaxDevices = 4;

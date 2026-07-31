@@ -12,16 +12,17 @@ import '../pages/quick_access_settings_page.dart';
 import 'quick_access_cover_tile.dart';
 import 'quick_access_toggle_tile.dart';
 
-/// Uniform tile width, sized for the widest case (a Rollladen tile with
-/// three inline mini buttons alongside icon + name). At the 780px reference
-/// width where `HomeOverview`'s second row activates, `HorizontalPageScaffold`
-/// subtracts 44+52 = 96px of page padding, leaving 684px (see
-/// `kQuickAccessMaxDevices` in `quick_access_limits.dart` for the full
-/// arithmetic):
-///   3 * 212 + 2 * 15 = 666 <= 684  (fits)
-///   4 * 212 + 3 * 15 = 893 >  684  (would wrap)
-const kQuickAccessTileWidth = 212.0;
-const kQuickAccessTileGap = 15.0;
+/// Uniform tile width. At the 780px reference width where `HomeOverview`'s
+/// second row activates, `HorizontalPageScaffold` subtracts 44+52 = 96px of
+/// page padding, leaving 684px (see `kQuickAccessMaxDevices` in
+/// `quick_access_limits.dart` for the full arithmetic):
+///   4 * 160 + 3 * 12 = 676 <= 684  (fits)
+///   5 * 160 + 4 * 12 = 848 >  684  (would wrap)
+/// The Rollladen tile stacks its three mini buttons under icon + name
+/// (`QuickAccessCoverTile`) instead of putting everything in one row, so the
+/// buttons can stay a comfortable tap size without needing a wider tile.
+const kQuickAccessTileWidth = 160.0;
+const kQuickAccessTileGap = 12.0;
 
 /// Renders each Schnellzugriff device as its own standalone tile — no
 /// shared surrounding card, no title. Just the tiles, side by side.
