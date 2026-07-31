@@ -28,15 +28,24 @@ class EnergyDashboardController extends ChangeNotifier {
   Map<DateTime, Map<String, double>> _history = {};
   DateTime? _lastRecordedAt;
 
+  /// Memoizes [data] so the (week/month history + device-usage sort)
+  /// aggregation runs once per actual data change instead of once per
+  /// widget that reads `EnergyScope.of(context).data` in the same frame.
+  /// Invalidated (set to `null`) wherever `_devices`/`_history`/
+  /// `pricePerKwh` change.
+  EnergyDashboardData? _cachedData;
+
   Future<void> start() async {
     pricePerKwh = await _repository.loadPricePerKwh();
     _history = await _repository.loadHistory();
+    _cachedData = null;
     notifyListeners();
   }
 
   Future<void> setPricePerKwh(double value) async {
     pricePerKwh = value;
     await _repository.savePricePerKwh(value);
+    _cachedData = null;
     notifyListeners();
   }
 
@@ -54,6 +63,7 @@ class EnergyDashboardController extends ChangeNotifier {
   /// raw reading into history.
   void updateDevices(List<SmartHomeDevice> devices) {
     _devices = devices;
+    _cachedData = null;
     notifyListeners();
     _maybeRecordReadings();
   }
@@ -157,7 +167,9 @@ class EnergyDashboardController extends ChangeNotifier {
     return total;
   }
 
-  EnergyDashboardData get data {
+  EnergyDashboardData get data => _cachedData ??= _computeData();
+
+  EnergyDashboardData _computeData() {
     final tracked = _trackedDevices;
     final total = todayKwh;
     final deviceUsages =
