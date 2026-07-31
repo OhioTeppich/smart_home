@@ -70,7 +70,9 @@ class _AppShellViewState extends State<_AppShellView> {
   @override
   Widget build(BuildContext context) {
     final compact = MediaQuery.sizeOf(context).width < 1100;
-    final period = EnergyScope.of(context).period;
+    final period = context.select<EnergyDashboardController, Period>(
+      (controller) => controller.period,
+    );
     final section = context.watch<AppNavigationBloc>().state.section;
 
     return BlocListener<AppNavigationBloc, AppNavigationState>(
@@ -174,9 +176,9 @@ class _AppShellViewState extends State<_AppShellView> {
   }
 
   void _openSettings() {
-    Navigator.of(context).push<void>(
-      MaterialPageRoute(builder: (_) => const SettingsHubPage()),
-    );
+    Navigator.of(
+      context,
+    ).push<void>(MaterialPageRoute(builder: (_) => const SettingsHubPage()));
   }
 
   Future<void> _addDeviceToCurrentRoom(AppSection section) async {

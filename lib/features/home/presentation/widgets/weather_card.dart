@@ -1,9 +1,30 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../application/home_controller.dart';
 import '../../domain/home_models.dart';
 import 'home_card.dart';
+
+/// What `WeatherCard` needs out of `HomeController`, compared by value via
+/// `context.select` — without this, any unrelated controller notification
+/// (e.g. the BTC ticker firing many times a minute) would rebuild the
+/// whole weather card too.
+class _WeatherView extends Equatable {
+  const _WeatherView({
+    required this.snapshot,
+    required this.loading,
+    required this.error,
+  });
+
+  final WeatherSnapshot? snapshot;
+  final bool loading;
+  final String? error;
+
+  @override
+  List<Object?> get props => [snapshot, loading, error];
+}
 
 class WeatherCard extends StatefulWidget {
   const WeatherCard({super.key});
@@ -29,7 +50,8 @@ class _WeatherCardState extends State<WeatherCard> {
     }
     final now = DateTime.now();
     final currentPoint = weather.hourly.reduce(
-      (a, b) => a.time.difference(now).inMinutes.abs() <
+      (a, b) =>
+          a.time.difference(now).inMinutes.abs() <
               b.time.difference(now).inMinutes.abs()
           ? a
           : b,
@@ -48,8 +70,14 @@ class _WeatherCardState extends State<WeatherCard> {
 
   @override
   Widget build(BuildContext context) {
-    final controller = HomeScope.of(context);
-    final weather = controller.weatherSnapshot;
+    final view = context.select<HomeController, _WeatherView>(
+      (controller) => _WeatherView(
+        snapshot: controller.weatherSnapshot,
+        loading: controller.loadingWeather,
+        error: controller.weatherError,
+      ),
+    );
+    final weather = view.snapshot;
     return HomeCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -62,30 +90,43 @@ class _WeatherCardState extends State<WeatherCard> {
           const SizedBox(height: 16),
           if (weather == null)
             Text(
-              controller.loadingWeather
+              view.loading
                   ? 'Wetter wird geladen …'
-                  : (controller.weatherError ?? 'Kein Wetter verfügbar'),
+                  : (view.error ?? 'Kein Wetter verfügbar'),
               style: const TextStyle(color: AppColors.muted),
             )
           else ...[
             Row(
               children: [
-                Icon(_weatherIcon(weather.weatherCode),
-                    size: 42, color: AppColors.blueDark),
+                Icon(
+                  _weatherIcon(weather.weatherCode),
+                  size: 42,
+                  color: AppColors.blueDark,
+                ),
                 const SizedBox(width: 12),
-                Text('${weather.temperature.round()}°',
-                    style: const TextStyle(
-                        fontSize: 34, fontWeight: FontWeight.w800)),
+                Text(
+                  '${weather.temperature.round()}°',
+                  style: const TextStyle(
+                    fontSize: 34,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(weather.condition,
-                          style: const TextStyle(fontWeight: FontWeight.w700)),
-                      Text(weather.location.name,
-                          style: const TextStyle(
-                              color: AppColors.muted, fontSize: 12)),
+                      Text(
+                        weather.condition,
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                      Text(
+                        weather.location.name,
+                        style: const TextStyle(
+                          color: AppColors.muted,
+                          fontSize: 12,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -99,28 +140,44 @@ class _WeatherCardState extends State<WeatherCard> {
             const SizedBox(height: 8),
             Row(
               children: [
-                const Icon(Icons.wb_twilight_rounded,
-                    size: 14, color: AppColors.muted),
+                const Icon(
+                  Icons.wb_twilight_rounded,
+                  size: 14,
+                  color: AppColors.muted,
+                ),
                 const SizedBox(width: 4),
-                Text(_formatTime(weather.sunrise),
-                    style: const TextStyle(
-                        color: AppColors.muted, fontSize: 12)),
-                const Text('  ·  ',
-                    style: TextStyle(color: AppColors.muted, fontSize: 12)),
-                const Icon(Icons.nights_stay_rounded,
-                    size: 14, color: AppColors.muted),
+                Text(
+                  _formatTime(weather.sunrise),
+                  style: const TextStyle(color: AppColors.muted, fontSize: 12),
+                ),
+                const Text(
+                  '  ·  ',
+                  style: TextStyle(color: AppColors.muted, fontSize: 12),
+                ),
+                const Icon(
+                  Icons.nights_stay_rounded,
+                  size: 14,
+                  color: AppColors.muted,
+                ),
                 const SizedBox(width: 4),
-                Text(_formatTime(weather.sunset),
-                    style: const TextStyle(
-                        color: AppColors.muted, fontSize: 12)),
-                const Text('  ·  ',
-                    style: TextStyle(color: AppColors.muted, fontSize: 12)),
-                const Icon(Icons.water_drop_rounded,
-                    size: 14, color: AppColors.muted),
+                Text(
+                  _formatTime(weather.sunset),
+                  style: const TextStyle(color: AppColors.muted, fontSize: 12),
+                ),
+                const Text(
+                  '  ·  ',
+                  style: TextStyle(color: AppColors.muted, fontSize: 12),
+                ),
+                const Icon(
+                  Icons.water_drop_rounded,
+                  size: 14,
+                  color: AppColors.muted,
+                ),
                 const SizedBox(width: 4),
-                Text('${weather.humidity}%',
-                    style: const TextStyle(
-                        color: AppColors.muted, fontSize: 12)),
+                Text(
+                  '${weather.humidity}%',
+                  style: const TextStyle(color: AppColors.muted, fontSize: 12),
+                ),
               ],
             ),
             const SizedBox(height: 14),
@@ -132,7 +189,8 @@ class _WeatherCardState extends State<WeatherCard> {
                     ? -1
                     : weather.hourly.indexOf(
                         weather.hourly.reduce(
-                          (a, b) => a.time.difference(now).inMinutes.abs() <
+                          (a, b) =>
+                              a.time.difference(now).inMinutes.abs() <
                                   b.time.difference(now).inMinutes.abs()
                               ? a
                               : b,
@@ -145,8 +203,10 @@ class _WeatherCardState extends State<WeatherCard> {
                     scrollDirection: Axis.horizontal,
                     physics: const BouncingScrollPhysics(),
                     padding: EdgeInsets.symmetric(
-                      horizontal: (constraints.maxWidth / 2 - 29)
-                          .clamp(0.0, double.infinity),
+                      horizontal: (constraints.maxWidth / 2 - 29).clamp(
+                        0.0,
+                        double.infinity,
+                      ),
                     ),
                     itemCount: weather.hourly.length,
                     itemBuilder: (_, i) {
@@ -176,9 +236,7 @@ class _WeatherCardState extends State<WeatherCard> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text(
-                                    current
-                                        ? 'JETZT'
-                                        : '${point.time.hour}:00',
+                                    current ? 'JETZT' : '${point.time.hour}:00',
                                     style: TextStyle(
                                       fontSize: current ? 9 : 10,
                                       fontWeight: FontWeight.w900,
@@ -228,9 +286,9 @@ String _formatTime(DateTime time) =>
     '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
 
 IconData _weatherIcon(int code) => switch (code) {
-      0 => Icons.wb_sunny_rounded,
-      1 || 2 => Icons.cloud_queue_rounded,
-      3 => Icons.cloud_rounded,
-      >= 71 && <= 77 => Icons.ac_unit_rounded,
-      _ => Icons.grain_rounded,
-    };
+  0 => Icons.wb_sunny_rounded,
+  1 || 2 => Icons.cloud_queue_rounded,
+  3 => Icons.cloud_rounded,
+  >= 71 && <= 77 => Icons.ac_unit_rounded,
+  _ => Icons.grain_rounded,
+};

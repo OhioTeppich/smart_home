@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';
+import 'package:provider/provider.dart';
 
 import '../../rooms/domain/entities/smart_home_device.dart';
 import '../../rooms/presentation/widgets/smart_home_device_ui.dart';
@@ -131,8 +132,10 @@ class EnergyDashboardController extends ChangeNotifier {
     );
   }
 
-  double get todayKwh =>
-      _trackedDevices.fold(0.0, (sum, device) => sum + _todayConsumptionFor(device));
+  double get todayKwh => _trackedDevices.fold(
+    0.0,
+    (sum, device) => sum + _todayConsumptionFor(device),
+  );
 
   double get currentPowerWatts =>
       _trackedDevices.fold(0.0, (sum, device) => sum + device.powerWatts);
@@ -172,20 +175,18 @@ class EnergyDashboardController extends ChangeNotifier {
   EnergyDashboardData _computeData() {
     final tracked = _trackedDevices;
     final total = todayKwh;
-    final deviceUsages =
-        [
-            for (final device in tracked)
-              DeviceUsage(
-                name: device.name,
-                kwh: _todayConsumptionFor(device),
-                share: total <= 0
-                    ? 0
-                    : ((_todayConsumptionFor(device) / total) * 100).round(),
-                icon: device.type.icon,
-                color: device.type.color,
-              ),
-          ]
-          ..sort((a, b) => b.kwh.compareTo(a.kwh));
+    final deviceUsages = [
+      for (final device in tracked)
+        DeviceUsage(
+          name: device.name,
+          kwh: _todayConsumptionFor(device),
+          share: total <= 0
+              ? 0
+              : ((_todayConsumptionFor(device) / total) * 100).round(),
+          icon: device.type.icon,
+          color: device.type.color,
+        ),
+    ]..sort((a, b) => b.kwh.compareTo(a.kwh));
 
     return EnergyDashboardData(
       hourly: [EnergyPoint('Heute', total, 0)],
@@ -195,10 +196,7 @@ class EnergyDashboardController extends ChangeNotifier {
     );
   }
 
-  List<EnergyPoint> _historyPoints(
-    int days,
-    String Function(DateTime) label,
-  ) {
+  List<EnergyPoint> _historyPoints(int days, String Function(DateTime) label) {
     final today = _todayKey();
     return [
       for (var i = days - 1; i >= 0; i--)
@@ -217,16 +215,24 @@ class EnergyDashboardController extends ChangeNotifier {
   );
 }
 
-class EnergyScope extends InheritedNotifier<EnergyDashboardController> {
-  const EnergyScope({
-    required EnergyDashboardController controller,
-    required super.child,
-    super.key,
-  }) : super(notifier: controller);
+/// Backed by `ChangeNotifierProvider` (not a raw `InheritedNotifier`) so
+/// consumers can use `context.select` to react to just the field they
+/// read (e.g. the period selector in the app shell) instead of rebuilding
+/// on every device tick. Widgets that only need to call a method (no
+/// rebuild) should use [of], which reads without subscribing.
+class EnergyScope extends StatelessWidget {
+  const EnergyScope({required this.controller, required this.child, super.key});
 
-  static EnergyDashboardController of(BuildContext context) {
-    final scope = context.dependOnInheritedWidgetOfExactType<EnergyScope>();
-    assert(scope != null, 'EnergyScope is missing above this widget.');
-    return scope!.notifier!;
-  }
+  final EnergyDashboardController controller;
+  final Widget child;
+
+  static EnergyDashboardController of(BuildContext context) =>
+      context.read<EnergyDashboardController>();
+
+  @override
+  Widget build(BuildContext context) =>
+      ChangeNotifierProvider<EnergyDashboardController>.value(
+        value: controller,
+        child: child,
+      );
 }

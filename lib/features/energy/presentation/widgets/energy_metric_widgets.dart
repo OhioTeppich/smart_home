@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/glass_card.dart';
@@ -159,7 +160,10 @@ class DeviceUsageListCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final devices = EnergyScope.of(context).data.deviceUsages;
+    final devices = context
+        .watch<EnergyDashboardController>()
+        .data
+        .deviceUsages;
     return SizedBox(
       height: fixedHeight,
       child: GlassCard(

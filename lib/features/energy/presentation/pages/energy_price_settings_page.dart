@@ -19,9 +19,6 @@ class _EnergyPriceSettingsPageState extends State<EnergyPriceSettingsPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // `EnergyScope.of` registers an InheritedWidget dependency, which is
-    // only allowed from didChangeDependencies onward, not initState — so
-    // the one-time prefill from the current price happens here instead.
     if (_prefilled) return;
     _prefilled = true;
     final price = EnergyScope.of(context).pricePerKwh;
@@ -52,12 +49,17 @@ class _EnergyPriceSettingsPageState extends State<EnergyPriceSettingsPage> {
           children: [
             const Text(
               'Preis pro Kilowattstunde, um die Kosten der Geräte zu berechnen.',
-              style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.blueDark),
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                color: AppColors.blueDark,
+              ),
             ),
             const SizedBox(height: 20),
             TextField(
               controller: _priceController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               decoration: InputDecoration(
                 labelText: 'Preis pro kWh',
                 hintText: '0,30',

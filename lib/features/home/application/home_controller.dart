@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';
+import 'package:provider/provider.dart';
 
 import '../../rooms/domain/entities/smart_home_device.dart';
 import '../domain/home_models.dart';
@@ -23,7 +24,6 @@ class HomeController extends ChangeNotifier {
   Timer? _weatherTimer;
   Timer? _marketTimer;
   StreamSubscription? _marketSubscription;
-  final markets = MarketSymbol.values;
 
   Future<void> start() async {
     await refreshWeather();
@@ -43,7 +43,7 @@ class HomeController extends ChangeNotifier {
   }
 
   Future<void> refreshMarkets() async {
-    final quotes = await Future.wait(markets.map(_market.initial));
+    final quotes = await Future.wait(MarketSymbol.values.map(_market.initial));
     for (final quote in quotes) {
       marketQuotes[quote.symbol] = quote;
     }
@@ -96,12 +96,25 @@ class HomeController extends ChangeNotifier {
   }
 }
 
-class HomeScope extends InheritedNotifier<HomeController> {
-  const HomeScope({
-    required HomeController controller,
-    required super.child,
-    super.key,
-  }) : super(notifier: controller);
-  static HomeController of(context) =>
-      context.dependOnInheritedWidgetOfExactType<HomeScope>()!.notifier!;
+/// Backed by `ChangeNotifierProvider` (not a raw `InheritedNotifier`) so
+/// consumers can use `context.select` to react to just the fields they
+/// read — e.g. `WeatherCard` doesn't rebuild on a BTC ticker update, and a
+/// price tick for one market symbol doesn't rebuild the other rows. Widgets
+/// that only need to call a method (no rebuild) should use [of], which
+/// reads without subscribing.
+class HomeScope extends StatelessWidget {
+  const HomeScope({required this.controller, required this.child, super.key});
+
+  final HomeController controller;
+  final Widget child;
+
+  static HomeController of(BuildContext context) =>
+      context.read<HomeController>();
+
+  @override
+  Widget build(BuildContext context) =>
+      ChangeNotifierProvider<HomeController>.value(
+        value: controller,
+        child: child,
+      );
 }

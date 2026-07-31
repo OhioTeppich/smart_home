@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/glass_card.dart';
@@ -22,7 +23,10 @@ class OverviewPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = EnergyScope.of(context);
+    // Needs almost every field the controller exposes (today/yesterday
+    // totals, price, per-device usage) — full reactivity is appropriate
+    // here, unlike the narrower selections in ChartCard/period-only readers.
+    final controller = context.watch<EnergyDashboardController>();
     final data = controller.data;
     final chart = ChartCard(period: period, onDetails: onDetails);
 

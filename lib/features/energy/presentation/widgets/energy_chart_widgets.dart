@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/glass_card.dart';
@@ -20,7 +21,7 @@ class ChartCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final data = EnergyScope.of(context).data;
+    final data = context.watch<EnergyDashboardController>().data;
     final points = switch (period) {
       Period.day => data.hourly,
       Period.week => data.week,
@@ -39,7 +40,10 @@ class ChartCard extends StatelessWidget {
                   children: [
                     Text(
                       'Verbrauchsverlauf',
-                      style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                     SizedBox(height: 5),
                     Text(

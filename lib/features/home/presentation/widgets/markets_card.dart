@@ -1,49 +1,48 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../application/home_controller.dart';
 import '../../domain/home_models.dart';
 import 'home_card.dart';
 
+/// Doesn't depend on `HomeController` at all — `MarketSymbol.values` is
+/// fixed, and each `_MarketRow` selects its own quote independently, so a
+/// price tick for one symbol only rebuilds that row, not the whole card.
 class MarketsCard extends StatelessWidget {
   const MarketsCard({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final controller = HomeScope.of(context);
-    return HomeCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const HomeCardTitle(
-            icon: Icons.show_chart_rounded,
-            title: 'Märkte',
-            trailing: 'Heute',
+  Widget build(BuildContext context) => HomeCard(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const HomeCardTitle(
+          icon: Icons.show_chart_rounded,
+          title: 'Märkte',
+          trailing: 'Heute',
+        ),
+        const SizedBox(height: 18),
+        for (final symbol in MarketSymbol.values)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: _MarketRow(symbol: symbol),
           ),
-          const SizedBox(height: 18),
-          ...controller.markets.map(
-            (symbol) => Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: _MarketRow(
-                symbol: symbol,
-                quote: controller.marketQuotes[symbol],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+      ],
+    ),
+  );
 }
 
 class _MarketRow extends StatelessWidget {
-  const _MarketRow({required this.symbol, required this.quote});
+  const _MarketRow({required this.symbol});
 
   final MarketSymbol symbol;
-  final MarketQuote? quote;
 
   @override
   Widget build(BuildContext context) {
+    final quote = context.select<HomeController, MarketQuote?>(
+      (controller) => controller.marketQuotes[symbol],
+    );
     final positive = (quote?.changePercent ?? 0) >= 0;
     final color = _marketColor(symbol);
     return Container(
@@ -78,14 +77,14 @@ class _MarketRow extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              quote == null ? '—' : _formatValue(quote!.price, 2),
+              quote == null ? '—' : _formatValue(quote.price, 2),
               style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
             ),
           ),
           Text(
             quote == null
                 ? 'Lädt …'
-                : '${positive ? '+' : ''}${quote!.changePercent.toStringAsFixed(2)}%',
+                : '${positive ? '+' : ''}${quote.changePercent.toStringAsFixed(2)}%',
             style: TextStyle(
               color: positive ? AppColors.green : Colors.red,
               fontWeight: FontWeight.w700,
@@ -108,7 +107,7 @@ String _formatValue(double value, int decimals) {
 }
 
 Color _marketColor(MarketSymbol symbol) => switch (symbol) {
-      MarketSymbol.nq => AppColors.blueDark,
-      MarketSymbol.es => AppColors.brown,
-      MarketSymbol.btc => const Color(0xFFE19A3E),
-    };
+  MarketSymbol.nq => AppColors.blueDark,
+  MarketSymbol.es => AppColors.brown,
+  MarketSymbol.btc => const Color(0xFFE19A3E),
+};
