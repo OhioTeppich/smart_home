@@ -240,6 +240,7 @@ class MarketService {
       await _btcSubscription?.cancel();
       await _btcSocket?.sink.close();
     };
+    DateTime? lastCutoff;
     () async {
       try {
         _btcSocket = WebSocketChannel.connect(
@@ -279,13 +280,20 @@ class MarketService {
                     // Fake-Historie mit echten Live-Preisen (falsche Prozente).
                     _history[symbol] = [];
                     _realHistory.add(symbol);
+                    lastCutoff = cutoff;
                   }
-                  final points = [
-                    ...?_history[symbol],
-                    MarketChartPoint(DateTime.now(), price),
-                  ].where((point) => point.time.isAfter(cutoff)).toList();
-                  _history[symbol] = points;
-                  final first = _history[symbol]!.first.value;
+                  // The ticker can fire many times a second; appending in
+                  // place instead of rebuilding+filtering the whole day's
+                  // history on every message keeps this O(1) amortized.
+                  // Only re-filter on an actual day rollover, which is the
+                  // one time stale (yesterday's) points need dropping.
+                  final points = _history[symbol]!;
+                  if (lastCutoff != cutoff) {
+                    points.removeWhere((point) => !point.time.isAfter(cutoff));
+                    lastCutoff = cutoff;
+                  }
+                  points.add(MarketChartPoint(nowTime, price));
+                  final first = points.first.value;
                   if (!controller.isClosed) {
                     controller.add(
                       MarketQuote(
@@ -293,8 +301,8 @@ class MarketService {
                         price: price,
                         change: price - first,
                         changePercent: (price / first - 1) * 100,
-                        updatedAt: DateTime.now(),
-                        points: _history[symbol]!,
+                        updatedAt: nowTime,
+                        points: points,
                         isLive: true,
                       ),
                     );
