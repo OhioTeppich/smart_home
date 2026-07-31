@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/horizontal_page_scaffold.dart';
 import '../../../ha_connection/application/ha_connection_bloc.dart';
 import '../../../ha_connection/application/ha_connection_state.dart';
 import '../../../ha_connection/presentation/pages/ha_connection_settings_page.dart';
@@ -25,7 +26,6 @@ class RoomPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final compact = MediaQuery.sizeOf(context).width < 700;
     final connection = context.watch<HaConnectionBloc>().state;
     final smartHome = context.watch<SmartHomeBloc>().state;
 
@@ -51,28 +51,24 @@ class RoomPage extends StatelessWidget {
         title: 'Verbindung unterbrochen',
         message: message,
       ),
-      SmartHomeConnected() => SingleChildScrollView(
-        padding: EdgeInsets.fromLTRB(
-          compact ? 24 : 44,
-          32,
-          compact ? 24 : 52,
-          42,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (smartHome.isPlacing) ...[
-              PlacementBanner(device: smartHome.pendingPlacement!.device),
-              const SizedBox(height: 12),
+      SmartHomeConnected() => HorizontalPageScaffold(
+        sections: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (smartHome.isPlacing) ...[
+                PlacementBanner(device: smartHome.pendingPlacement!.device),
+                const SizedBox(height: 12),
+              ],
+              RoomLayout(
+                state: smartHome,
+                roomId: roomId,
+                roomName: roomName,
+                imageAsset: imageAsset,
+              ),
             ],
-            RoomLayout(
-              state: smartHome,
-              roomId: roomId,
-              roomName: roomName,
-              imageAsset: imageAsset,
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     };
   }
