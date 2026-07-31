@@ -14,13 +14,14 @@ import 'quick_access_toggle_tile.dart';
 
 /// Uniform tile width, sized for the widest case (a Rollladen tile with
 /// three inline mini buttons alongside icon + name). At the 780px reference
-/// width where `HomeOverview`'s second row activates, 736px are available
-/// (see `kQuickAccessMaxDevices` in `quick_access_limits.dart` for the full
+/// width where `HomeOverview`'s second row activates, `HorizontalPageScaffold`
+/// subtracts 44+52 = 96px of page padding, leaving 684px (see
+/// `kQuickAccessMaxDevices` in `quick_access_limits.dart` for the full
 /// arithmetic):
-///   3 * 180 + 2 * 12 = 564 <= 736  (fits)
-///   4 * 180 + 3 * 12 = 756 >  736  (would wrap)
-const kQuickAccessTileWidth = 180.0;
-const kQuickAccessTileGap = 12.0;
+///   3 * 212 + 2 * 15 = 666 <= 684  (fits)
+///   4 * 212 + 3 * 15 = 893 >  684  (would wrap)
+const kQuickAccessTileWidth = 212.0;
+const kQuickAccessTileGap = 15.0;
 
 /// Renders each Schnellzugriff device as its own standalone tile — no
 /// shared surrounding card, no title. Just the tiles, side by side.
@@ -78,7 +79,9 @@ class QuickAccessCard extends StatelessWidget {
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
+      reverse: true,
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
           for (final device in resolved) ...[
             SizedBox(
@@ -87,7 +90,7 @@ class QuickAccessCard extends StatelessWidget {
                   ? QuickAccessCoverTile(device: device)
                   : QuickAccessToggleTile(device: device),
             ),
-            const SizedBox(width: kQuickAccessTileGap),
+            if (device != resolved.last) const SizedBox(width: kQuickAccessTileGap),
           ],
         ],
       ),

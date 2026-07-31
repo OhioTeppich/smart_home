@@ -26,7 +26,7 @@ class HomeOverview extends StatelessWidget {
         ),
       ),
       const SizedBox(height: 14),
-      const SizedBox(height: 44, child: QuickAccessCard()),
+      const SizedBox(height: 56, child: QuickAccessCard()),
     ],
   );
 }

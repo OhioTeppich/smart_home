@@ -18,33 +18,33 @@ class QuickAccessCoverTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
     decoration: BoxDecoration(
       color: device.type.color.withOpacity(.18),
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(16),
       border: Border.all(color: device.type.color.withOpacity(.35)),
     ),
     child: Row(
       children: [
         Container(
-          width: 20,
-          height: 20,
+          width: 26,
+          height: 26,
           decoration: BoxDecoration(
             color: device.type.color,
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(device.type.icon, size: 12),
+          child: Icon(device.type.icon, size: 16),
         ),
-        const SizedBox(width: 6),
+        const SizedBox(width: 8),
         Expanded(
           child: Text(
             device.name,
             overflow: TextOverflow.ellipsis,
             maxLines: 1,
-            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 11),
+            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
           ),
         ),
-        const SizedBox(width: 6),
+        const SizedBox(width: 8),
         _MiniCoverButton(
           icon: Icons.keyboard_arrow_up_rounded,
           tooltip: 'Öffnen',
@@ -52,7 +52,7 @@ class QuickAccessCoverTile extends StatelessWidget {
             SmartHomeCoverActionRequested(device.id, CoverAction.open),
           ),
         ),
-        const SizedBox(width: 3),
+        const SizedBox(width: 4),
         _MiniCoverButton(
           icon: Icons.stop_rounded,
           tooltip: 'Stopp',
@@ -60,7 +60,7 @@ class QuickAccessCoverTile extends StatelessWidget {
             SmartHomeCoverActionRequested(device.id, CoverAction.stop),
           ),
         ),
-        const SizedBox(width: 3),
+        const SizedBox(width: 4),
         _MiniCoverButton(
           icon: Icons.keyboard_arrow_down_rounded,
           tooltip: 'Schließen',
@@ -88,15 +88,15 @@ class _MiniCoverButton extends StatelessWidget {
   Widget build(BuildContext context) => Tooltip(
     message: tooltip,
     child: SizedBox(
-      width: 22,
-      height: 22,
+      width: 26,
+      height: 26,
       child: Material(
         color: AppColors.line.withOpacity(.7),
-        borderRadius: BorderRadius.circular(7),
+        borderRadius: BorderRadius.circular(8),
         child: InkWell(
-          borderRadius: BorderRadius.circular(7),
+          borderRadius: BorderRadius.circular(8),
           onTap: onTap,
-          child: Icon(icon, size: 13, color: AppColors.ink),
+          child: Icon(icon, size: 15, color: AppColors.ink),
         ),
       ),
     ),
