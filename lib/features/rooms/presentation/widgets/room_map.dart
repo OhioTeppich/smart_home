@@ -4,30 +4,30 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../application/smart_home_bloc.dart';
 import '../../application/smart_home_event.dart';
-import '../../application/smart_home_state.dart';
 import '../../domain/entities/smart_home_device.dart';
 import 'room_dialogs.dart';
 import 'smart_home_device_ui.dart';
 
 class RoomMap extends StatelessWidget {
   const RoomMap({
-    required this.state,
+    required this.devices,
+    required this.isPlacing,
     required this.roomId,
     required this.roomName,
     this.imageAsset,
     super.key,
   });
-  final SmartHomeConnected state;
+
+  /// Already scoped to [roomId] by the caller — no need to filter again.
+  final List<SmartHomeDevice> devices;
+  final bool isPlacing;
   final String roomId;
   final String roomName;
   final String? imageAsset;
 
   @override
   Widget build(BuildContext context) {
-    final placedDevices = state
-        .devicesFor(roomId)
-        .where((device) => device.isPlaced)
-        .toList();
+    final placedDevices = devices.where((device) => device.isPlaced).toList();
     return Container(
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
@@ -51,7 +51,7 @@ class RoomMap extends StatelessWidget {
                     Image.asset(imageAsset!, fit: BoxFit.cover)
                   else
                     RoomPlaceholder(roomName: roomName),
-                  if (state.isPlacing)
+                  if (isPlacing)
                     GestureDetector(
                       behavior: HitTestBehavior.opaque,
                       onTapUp: (details) => context.read<SmartHomeBloc>().add(
@@ -64,7 +64,7 @@ class RoomMap extends StatelessWidget {
                         color: AppColors.blueDark.withOpacity(.08),
                       ),
                     ),
-                  if (placedDevices.isEmpty && !state.isPlacing)
+                  if (placedDevices.isEmpty && !isPlacing)
                     const Center(child: EmptyMapHint()),
                   ...placedDevices.map(
                     (device) => Positioned(

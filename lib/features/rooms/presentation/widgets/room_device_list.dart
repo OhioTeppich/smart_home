@@ -4,24 +4,22 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../application/smart_home_bloc.dart';
 import '../../application/smart_home_event.dart';
-import '../../application/smart_home_state.dart';
 import '../../domain/entities/smart_home_device.dart';
 import 'smart_home_device_ui.dart';
 
 class RoomDeviceList extends StatelessWidget {
   const RoomDeviceList({
-    required this.state,
-    required this.roomId,
+    required this.devices,
     required this.roomName,
     super.key,
   });
-  final SmartHomeConnected state;
-  final String roomId;
+
+  /// Already scoped to this room by the caller.
+  final List<SmartHomeDevice> devices;
   final String roomName;
 
   @override
   Widget build(BuildContext context) {
-    final devices = state.devicesFor(roomId);
     return Container(
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(

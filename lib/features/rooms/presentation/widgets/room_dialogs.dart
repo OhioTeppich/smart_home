@@ -1,3 +1,4 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -16,6 +17,18 @@ const _roomLabels = <String, String>{
   'bathroom': 'Bad',
   'hallway': 'Flur',
 };
+
+/// The devices `AddDeviceDialog` offers, compared by value via
+/// `context.select` so it only rebuilds when this filtered set actually
+/// changes, not on every unrelated Home Assistant event.
+class _AvailableDevices extends Equatable {
+  const _AvailableDevices(this.devices);
+
+  final List<SmartHomeDevice> devices;
+
+  @override
+  List<Object?> get props => [devices];
+}
 
 /// Devices are never invented by hand anymore — Home Assistant is the only
 /// source of device existence. This dialog just lets the user place an
@@ -40,16 +53,20 @@ class _AddDeviceDialogState extends State<AddDeviceDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final state = context.watch<SmartHomeBloc>().state;
-    final available = state is SmartHomeConnected
-        ? state.devices
-              .where(
-                (device) =>
-                    (device.roomId == widget.roomId || device.roomId == null) &&
-                    !device.isPlaced,
-              )
-              .toList()
-        : const <SmartHomeDevice>[];
+    final available = context.select<SmartHomeBloc, _AvailableDevices>((bloc) {
+      final state = bloc.state;
+      final devices = state is SmartHomeConnected
+          ? state.devices
+                .where(
+                  (device) =>
+                      (device.roomId == widget.roomId ||
+                          device.roomId == null) &&
+                      !device.isPlaced,
+                )
+                .toList()
+          : const <SmartHomeDevice>[];
+      return _AvailableDevices(devices);
+    }).devices;
     final query = _query.trim().toLowerCase();
     final filtered = query.isEmpty
         ? available

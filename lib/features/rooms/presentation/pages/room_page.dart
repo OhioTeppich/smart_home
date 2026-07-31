@@ -1,3 +1,4 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -11,6 +12,47 @@ import '../../application/smart_home_event.dart';
 import '../../application/smart_home_state.dart';
 import '../../domain/entities/smart_home_device.dart';
 import '../widgets/room_layout.dart';
+
+/// What `RoomPage` actually needs out of `SmartHomeBloc`'s state, derived
+/// once per emission and compared by value via `context.select`. Narrows
+/// the rebuild trigger from "any device anywhere changed" down to "this
+/// room's devices, or the placement flow, changed" — without this, all six
+/// room pages mounted at once in `AppShell`'s `PageView` would rebuild in
+/// lockstep on every unrelated Home Assistant event.
+sealed class _RoomView extends Equatable {
+  const _RoomView();
+}
+
+class _RoomViewLoading extends _RoomView {
+  const _RoomViewLoading();
+
+  @override
+  List<Object?> get props => [];
+}
+
+class _RoomViewError extends _RoomView {
+  const _RoomViewError(this.message);
+
+  final String message;
+
+  @override
+  List<Object?> get props => [message];
+}
+
+class _RoomViewConnected extends _RoomView {
+  const _RoomViewConnected({
+    required this.devices,
+    required this.isPlacing,
+    required this.pendingPlacementDevice,
+  });
+
+  final List<SmartHomeDevice> devices;
+  final bool isPlacing;
+  final SmartHomeDevice? pendingPlacementDevice;
+
+  @override
+  List<Object?> get props => [devices, isPlacing, pendingPlacementDevice];
+}
 
 class RoomPage extends StatelessWidget {
   const RoomPage({
@@ -27,7 +69,6 @@ class RoomPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final connection = context.watch<HaConnectionBloc>().state;
-    final smartHome = context.watch<SmartHomeBloc>().state;
 
     if (connection is HaConnectionReady && connection.savedConfig == null) {
       return const _RoomStatusMessage(
@@ -40,36 +81,55 @@ class RoomPage extends StatelessWidget {
       );
     }
 
-    return switch (smartHome) {
-      SmartHomeInitial() || SmartHomeLoading() => const _RoomStatusMessage(
+    final view = context.select<SmartHomeBloc, _RoomView>((bloc) {
+      final state = bloc.state;
+      return switch (state) {
+        SmartHomeInitial() || SmartHomeLoading() => const _RoomViewLoading(),
+        SmartHomeError(:final message) => _RoomViewError(message),
+        SmartHomeConnected() => _RoomViewConnected(
+          devices: state.devicesFor(roomId),
+          isPlacing: state.isPlacing,
+          pendingPlacementDevice: state.pendingPlacement?.device,
+        ),
+      };
+    });
+
+    return switch (view) {
+      _RoomViewLoading() => const _RoomStatusMessage(
         icon: Icons.hourglass_top_rounded,
         title: 'Verbindung wird hergestellt',
         message: 'Geräte werden von Home Assistant geladen …',
       ),
-      SmartHomeError(:final message) => _RoomStatusMessage(
+      _RoomViewError(:final message) => _RoomStatusMessage(
         icon: Icons.cloud_off_rounded,
         title: 'Verbindung unterbrochen',
         message: message,
       ),
-      SmartHomeConnected() => HorizontalPageScaffold(
-        sections: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (smartHome.isPlacing) ...[
-                PlacementBanner(device: smartHome.pendingPlacement!.device),
-                const SizedBox(height: 12),
+      _RoomViewConnected(
+        :final devices,
+        :final isPlacing,
+        :final pendingPlacementDevice,
+      ) =>
+        HorizontalPageScaffold(
+          sections: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (isPlacing) ...[
+                  PlacementBanner(device: pendingPlacementDevice!),
+                  const SizedBox(height: 12),
+                ],
+                RoomLayout(
+                  devices: devices,
+                  isPlacing: isPlacing,
+                  roomId: roomId,
+                  roomName: roomName,
+                  imageAsset: imageAsset,
+                ),
               ],
-              RoomLayout(
-                state: smartHome,
-                roomId: roomId,
-                roomName: roomName,
-                imageAsset: imageAsset,
-              ),
-            ],
-          ),
-        ],
-      ),
+            ),
+          ],
+        ),
     };
   }
 }

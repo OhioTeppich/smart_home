@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
 
-import '../../application/smart_home_state.dart';
+import '../../domain/entities/smart_home_device.dart';
 import 'room_device_list.dart';
 import 'room_map.dart';
 
 class RoomLayout extends StatelessWidget {
   const RoomLayout({
-    required this.state,
+    required this.devices,
+    required this.isPlacing,
     required this.roomId,
     required this.roomName,
     this.imageAsset,
     super.key,
   });
-  final SmartHomeConnected state;
+  final List<SmartHomeDevice> devices;
+  final bool isPlacing;
   final String roomId;
   final String roomName;
   final String? imageAsset;
@@ -35,7 +37,7 @@ class RoomLayout extends StatelessWidget {
       final list = SizedBox(
         width: listWidth,
         height: cardHeight,
-        child: RoomDeviceList(state: state, roomId: roomId, roomName: roomName),
+        child: RoomDeviceList(devices: devices, roomName: roomName),
       );
 
       if (sideBySide) {
@@ -45,7 +47,8 @@ class RoomLayout extends StatelessWidget {
             SizedBox(
               width: mapCardWidth,
               child: RoomMap(
-                state: state,
+                devices: devices,
+                isPlacing: isPlacing,
                 roomId: roomId,
                 roomName: roomName,
                 imageAsset: imageAsset,
@@ -59,7 +62,8 @@ class RoomLayout extends StatelessWidget {
       return Column(
         children: [
           RoomMap(
-            state: state,
+            devices: devices,
+            isPlacing: isPlacing,
             roomId: roomId,
             roomName: roomName,
             imageAsset: imageAsset,
