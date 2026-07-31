@@ -14,11 +14,16 @@ class _FakeHaServer {
 
   final HttpServer _server;
   WebSocket? _lastSocket;
-  final _subscribed = Completer<void>();
+  var _subscribed = Completer<void>();
 
   /// Completes once the fake server has acked a `subscribe_events` command,
   /// i.e. once the real handshake the client performs has fully settled.
   Future<void> get subscribed => _subscribed.future;
+
+  /// Resets [subscribed] to a fresh, not-yet-completed future so a test can
+  /// await the *next* handshake (e.g. the client's reconnect after
+  /// [disconnectClient]) instead of the one that already completed.
+  void expectAnotherSubscription() => _subscribed = Completer<void>();
 
   static Future<_FakeHaServer> start() async {
     final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
@@ -44,7 +49,11 @@ class _FakeHaServer {
           }
         } else if (decoded['type'] == 'subscribe_events') {
           socket.add(
-            jsonEncode({'id': decoded['id'], 'type': 'result', 'success': true}),
+            jsonEncode({
+              'id': decoded['id'],
+              'type': 'result',
+              'success': true,
+            }),
           );
           if (!_subscribed.isCompleted) _subscribed.complete();
         }
@@ -54,9 +63,15 @@ class _FakeHaServer {
 
   void pushMalformedFrame() => _lastSocket!.add('not json');
 
-  void pushEvent(Map<String, dynamic> event) => _lastSocket!.add(
-    jsonEncode({'id': 1, 'type': 'event', 'event': event}),
-  );
+  void pushEvent(Map<String, dynamic> event) =>
+      _lastSocket!.add(jsonEncode({'id': 1, 'type': 'event', 'event': event}));
+
+  /// Simulates the server dropping the connection (network blip, HA
+  /// restart) without shutting down the fake server itself, so the client
+  /// can reconnect against the same [baseUrl] afterwards.
+  Future<void> disconnectClient() async {
+    await _lastSocket?.close();
+  }
 
   Future<void> close() => _server.close(force: true);
 }
@@ -131,4 +146,36 @@ void main() {
 
     await expectLater(events, emitsError(isA<HaConnectionException>()));
   });
+
+  test(
+    'reconnects after the connection drops and resumes delivering events',
+    () async {
+      final client = HaWebSocketClient();
+      final events = client.events(
+        baseUrl: server.baseUrl,
+        token: 'valid-token',
+        eventType: 'state_changed',
+      );
+
+      final collected = <Map<String, dynamic>>[];
+      final subscription = events.listen(collected.add);
+      await server.subscribed;
+
+      server.expectAnotherSubscription();
+      await server.disconnectClient();
+      // The client backs off for a second before retrying — no manual
+      // delay needed here, this just waits for that reconnect to land.
+      await server.subscribed;
+
+      server.pushEvent({
+        'event_type': 'state_changed',
+        'data': {'entity_id': 'light.wohnzimmer_lampe'},
+      });
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      expect(collected, hasLength(1));
+      expect(collected.single['data']['entity_id'], 'light.wohnzimmer_lampe');
+      await subscription.cancel();
+    },
+  );
 }
