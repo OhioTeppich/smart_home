@@ -1,3 +1,5 @@
+import 'package:equatable/equatable.dart';
+
 enum SmartHomeDeviceType {
   lamp,
   bulb,
@@ -25,7 +27,7 @@ extension SmartHomeDeviceTypeLabel on SmartHomeDeviceType {
 /// `id` holds the Home Assistant `entity_id` (e.g. `light.wohnzimmer_lampe`)
 /// once devices come from Home Assistant — there is no separate identity
 /// field, so every existing lookup by `id` keeps working unchanged.
-class SmartHomeDevice {
+class SmartHomeDevice extends Equatable {
   const SmartHomeDevice({
     required this.id,
     required this.name,
@@ -143,4 +145,23 @@ class SmartHomeDevice {
   /// the "not assigned" pool `AddDeviceDialog` offers.
   SmartHomeDevice removeFromView() =>
       copyWith(clearRoomId: true, clearPlacement: true);
+
+  @override
+  List<Object?> get props => [
+    id,
+    name,
+    type,
+    status,
+    powerWatts,
+    dailyKwh,
+    dailyKwhIsCumulative,
+    lastUpdated,
+    roomId,
+    switchCount,
+    isOn,
+    x,
+    y,
+    coverPosition,
+    coverRawState,
+  ];
 }
