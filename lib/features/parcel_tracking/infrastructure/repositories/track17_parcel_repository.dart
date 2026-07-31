@@ -6,6 +6,7 @@ import '../../domain/entities/parcel.dart';
 import '../../domain/entities/parcel_status.dart';
 import '../../domain/failures/parcel_tracking_failure.dart';
 import '../../domain/repositories/parcel_repository.dart';
+import '../../domain/services/parcel_sorter.dart';
 import '../data_sources/parcel_local_data_source.dart';
 import '../data_sources/track17_api_key_local_data_source.dart';
 import '../data_sources/track17_remote_data_source.dart';
@@ -51,7 +52,7 @@ class Track17ParcelRepository implements ParcelRepository {
       _byId
         ..clear()
         ..addEntries(records.map((record) => MapEntry(record.id, record.toDomain())));
-      if (!controller.isClosed) controller.add(_byId.values.toList());
+      if (!controller.isClosed) controller.add(sortParcelsForDisplay(_byId.values.toList()));
     } catch (error) {
       if (!controller.isClosed) {
         controller.addError(
@@ -78,7 +79,9 @@ class Track17ParcelRepository implements ParcelRepository {
   @override
   Future<List<Parcel>> fetchParcels() async {
     final records = await _localDataSource.readAll();
-    return [for (final record in records) record.toDomain()];
+    return sortParcelsForDisplay([
+      for (final record in records) record.toDomain(),
+    ]);
   }
 
   @override
@@ -182,7 +185,7 @@ class Track17ParcelRepository implements ParcelRepository {
   void _emit() {
     final controller = _activeController;
     if (controller != null && !controller.isClosed) {
-      controller.add(_byId.values.toList());
+      controller.add(sortParcelsForDisplay(_byId.values.toList()));
     }
   }
 

@@ -32,7 +32,7 @@ class HomeOverview extends StatelessWidget {
       ),
       const SizedBox(height: 14),
       SizedBox(
-        height: 220,
+        height: 240,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: const [
