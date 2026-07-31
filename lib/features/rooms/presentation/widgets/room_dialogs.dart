@@ -69,54 +69,62 @@ class _AddDeviceDialogState extends State<AddDeviceDialog> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-            if (available.isNotEmpty) ...[
-              TextField(
-                controller: _searchController,
-                autofocus: true,
-                decoration: const InputDecoration(
-                  hintText: 'Gerät suchen…',
-                  prefixIcon: Icon(Icons.search),
-                  isDense: true,
-                ),
-                onChanged: (value) => setState(() => _query = value),
-              ),
-              const SizedBox(height: 12),
-            ],
-            available.isEmpty
-                ? const Text(
-                    'Keine unplatzierten Geräte für diesen Raum gefunden. Geräte '
-                    'werden automatisch aus Home Assistant übernommen, sobald ihr '
-                    'Name auf diesen Raum hindeutet, oder lassen sich im '
-                    'Geräte-Dialog manuell zuordnen.',
-                  )
-                : filtered.isEmpty
-                ? const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    child: Text('Keine Geräte gefunden.'),
-                  )
-                : ConstrainedBox(
-                    constraints: const BoxConstraints(maxHeight: 360),
-                    child: ListView.separated(
-                      shrinkWrap: true,
-                      itemCount: filtered.length,
-                      separatorBuilder: (_, index) => const Divider(height: 1),
-                      itemBuilder: (context, index) {
-                        final device = filtered[index];
-                        return ListTile(
-                          leading: Icon(device.type.icon, color: device.type.color),
-                          title: Text(device.name),
-                          subtitle: Text(device.type.label),
-                          onTap: () {
-                            context.read<SmartHomeBloc>().add(
-                              SmartHomePlacementStarted(device, widget.roomId),
-                            );
-                            Navigator.pop(context);
-                          },
-                        );
-                      },
-                    ),
+              if (available.isNotEmpty) ...[
+                TextField(
+                  controller: _searchController,
+                  autofocus: true,
+                  decoration: const InputDecoration(
+                    hintText: 'Gerät suchen…',
+                    prefixIcon: Icon(Icons.search),
+                    isDense: true,
                   ),
-          ],
+                  onChanged: (value) => setState(() => _query = value),
+                ),
+                const SizedBox(height: 12),
+              ],
+              available.isEmpty
+                  ? const Text(
+                      'Keine unplatzierten Geräte für diesen Raum gefunden. Geräte '
+                      'werden automatisch aus Home Assistant übernommen, sobald ihr '
+                      'Name auf diesen Raum hindeutet, oder lassen sich im '
+                      'Geräte-Dialog manuell zuordnen.',
+                    )
+                  : filtered.isEmpty
+                  ? const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      child: Text('Keine Geräte gefunden.'),
+                    )
+                  : ConstrainedBox(
+                      constraints: const BoxConstraints(maxHeight: 360),
+                      child: ListView.separated(
+                        shrinkWrap: true,
+                        itemCount: filtered.length,
+                        separatorBuilder: (_, index) =>
+                            const Divider(height: 1),
+                        itemBuilder: (context, index) {
+                          final device = filtered[index];
+                          return ListTile(
+                            leading: Icon(
+                              device.type.icon,
+                              color: device.type.color,
+                            ),
+                            title: Text(device.name),
+                            subtitle: Text(device.type.label),
+                            onTap: () {
+                              context.read<SmartHomeBloc>().add(
+                                SmartHomePlacementStarted(
+                                  device,
+                                  widget.roomId,
+                                ),
+                              );
+                              Navigator.pop(context);
+                            },
+                          );
+                        },
+                      ),
+                    ),
+            ],
+          ),
         ),
       ),
       actions: [
@@ -130,7 +138,11 @@ class _AddDeviceDialogState extends State<AddDeviceDialog> {
 }
 
 class DeviceInfoDialog extends StatefulWidget {
-  const DeviceInfoDialog({required this.device, required this.roomId, super.key});
+  const DeviceInfoDialog({
+    required this.device,
+    required this.roomId,
+    super.key,
+  });
   final SmartHomeDevice device;
   final String roomId;
   @override
@@ -310,7 +322,11 @@ class _PowerToggleRowState extends State<PowerToggleRow> {
 }
 
 class CoverControlRow extends StatelessWidget {
-  const CoverControlRow({required this.device, required this.onAction, super.key});
+  const CoverControlRow({
+    required this.device,
+    required this.onAction,
+    super.key,
+  });
   final SmartHomeDevice device;
   final ValueChanged<CoverAction> onAction;
 
