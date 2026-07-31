@@ -1,20 +1,20 @@
 # Smart Home Architekturstandard
 
-Dieses Dokument ist kein Abbild des aktuellen Dateibestands. Es ist das verbindliche Schema, nach dem neue Features und Änderungen im Smart Home aufgebaut werden.
+Dokument kein Abbild aktuellen Dateibestands. Verbindliches Schema für neue Features und Änderungen im Smart Home.
 
-Die Struktur orientiert sich an den DDD-Prinzipien aus dem [Reso-Coder-DDD-Artikel](https://resocoder.com/2020/03/09/flutter-firebase-ddd-course-1-domain-driven-design-principles/): Features werden über die architektonischen Schichten organisiert, die Domain bleibt unabhängig, und die Application-Schicht koordiniert die Abläufe zwischen UI, Domain und Datenquellen.
+Struktur folgt DDD-Prinzipien aus [Reso-Coder-DDD-Artikel](https://resocoder.com/2020/03/09/flutter-firebase-ddd-course-1-domain-driven-design-principles/): Features organisiert über architektonische Schichten, Domain bleibt unabhängig, Application-Schicht koordiniert Abläufe zwischen UI, Domain und Datenquellen.
 
 ## 1. Grundprinzipien
 
-- Die fachliche Sprache des Produkts bestimmt die Feature-Grenzen.
-- Die Domain enthält ausschließlich fachliche Regeln und darf keine Flutter-, API-, Datenbank- oder Infrastrukturklassen importieren.
-- Die Presentation-Schicht stellt Daten dar und nimmt Benutzereingaben entgegen. Sie enthält keine Repository-Aufrufe und keine fachlichen Berechnungen.
-- Die Application-Schicht orchestriert Use Cases, Controller oder BLoCs. Sie entscheidet, was als Nächstes passiert, implementiert aber nicht die eigentliche Infrastruktur.
-- Die Infrastructure-Schicht kapselt APIs, Home Assistant, Datenbanken, Sensoren und lokale Speicherung.
-- Abhängigkeiten zeigen immer nach innen: Presentation → Application → Domain. Infrastructure → Domain.
-- Die konkrete Verdrahtung von Implementierungen erfolgt ausschließlich im Composition Root unter `app/`.
-- Features dürfen nicht direkt die Presentation oder Infrastructure eines anderen Features importieren.
-- Das State Management erfolgt verbindlich mit `flutter_bloc` und dem BLoC-Muster.
+- Fachliche Sprache Produkts bestimmt Feature-Grenzen.
+- Domain enthält nur fachliche Regeln. Keine Flutter-, API-, Datenbank- oder Infrastrukturklassen-Imports.
+- Presentation-Schicht stellt Daten dar, nimmt Eingaben entgegen. Keine Repository-Aufrufe, keine fachlichen Berechnungen.
+- Application-Schicht orchestriert Use Cases, Controller, BLoCs. Entscheidet nächsten Schritt, implementiert Infrastruktur nicht selbst.
+- Infrastructure-Schicht kapselt APIs, Home Assistant, Datenbanken, Sensoren, lokale Speicherung.
+- Abhängigkeiten immer nach innen: Presentation → Application → Domain. Infrastructure → Domain.
+- Konkrete Verdrahtung von Implementierungen nur im Composition Root unter `app/`.
+- Features importieren nicht direkt Presentation oder Infrastructure anderer Features.
+- State Management verbindlich mit `flutter_bloc` und BLoC-Muster.
 
 ## 2. Verbindliche Projektstruktur
 
@@ -58,21 +58,21 @@ lib/
             └── components/           # Größere UI-Kompositionen, falls erforderlich
 ```
 
-Nicht jedes Feature muss jede Schicht besitzen. Ein reines Darstellungs-Feature braucht beispielsweise keine Domain oder Infrastructure. Ordner werden nicht als Platzhalter angelegt.
+Nicht jedes Feature braucht jede Schicht. Reines Darstellungs-Feature z.B. ohne Domain oder Infrastructure. Ordner nicht als Platzhalter anlegen.
 
 ## 3. Verantwortlichkeiten der Schichten
 
 ### Domain
 
-Die Domain ist der fachliche Kern und vollständig framework-unabhängig.
+Fachlicher Kern, vollständig framework-unabhängig.
 
-Hier liegen:
+Enthält:
 
 - Entitäten mit Identität und fachlicher Bedeutung
-- Value Objects, die ungültige Zustände verhindern
+- Value Objects gegen ungültige Zustände
 - fachliche Berechnungen und Regeln
 - erwartbare Fehler als `Failure`-Typen
-- Repository-Interfaces, niemals deren Implementierungen
+- Repository-Interfaces, nie deren Implementierungen
 
 Nicht erlaubt:
 
@@ -83,7 +83,7 @@ Nicht erlaubt:
 
 ### Application
 
-Die Application-Schicht koordiniert einen Ablauf.
+Application-Schicht koordiniert Ablauf.
 
 Beispiele:
 
@@ -92,11 +92,11 @@ Beispiele:
 - `RefreshHomeAssistantValues`
 - `AddRoomDevice`
 
-Use Cases und Controller dürfen Domain-Verträge verwenden. Sie dürfen aber nicht wissen, ob die Daten aus Home Assistant, einem Cache oder Dummy-Daten kommen.
+Use Cases und Controller nutzen Domain-Verträge. Wissen nicht, ob Daten aus Home Assistant, Cache oder Dummy-Daten kommen.
 
 ## 4. State Management: BLoC
 
-Das Projekt verwendet für globalen, Feature- und Seiten-State ausschließlich das BLoC-Muster aus `flutter_bloc`.
+Projekt nutzt für globalen, Feature- und Seiten-State ausschließlich BLoC-Muster aus `flutter_bloc`.
 
 ```text
 Presentation Widget
@@ -110,15 +110,15 @@ Presentation Widget
 
 Verbindliche Regeln:
 
-- Jeder relevante Ablauf wird über ein klar benanntes Event gestartet.
-- Jeder BLoC besitzt typisierte States für Initialisierung, Laden, Erfolg und Fehler, sofern diese Zustände auftreten können.
-- BLoCs liegen in der Application-Schicht, nicht in `presentation/`.
-- Widgets verwenden `BlocProvider`, `BlocBuilder`, `BlocListener` oder `BlocConsumer`.
-- Widgets dürfen keine Repositorys direkt aufrufen und keine fachliche State-Logik enthalten.
-- `ChangeNotifier`, eigene globale Singleton-States und verstreute `setState`-Logik werden für Feature-State nicht verwendet.
-- `setState` ist nur für rein lokale, kurzlebige UI-Zustände erlaubt, zum Beispiel ein temporär geöffnetes Menü.
-- Für die globale Navigation wird ein eigener `AppNavigationBloc` verwendet; Energie und Rooms besitzen jeweils eigene Feature-BLoCs.
-- `Cubit` wird nicht als Ersatz verwendet, wenn der Ablauf fachliche Events benötigt. Wir verwenden dann den vollständigen BLoC mit Events und States.
+- Jeder relevante Ablauf startet über klar benanntes Event.
+- Jeder BLoC hat typisierte States für Initialisierung, Laden, Erfolg, Fehler (soweit Zustände auftreten können).
+- BLoCs liegen in Application-Schicht, nicht in `presentation/`.
+- Widgets nutzen `BlocProvider`, `BlocBuilder`, `BlocListener` oder `BlocConsumer`.
+- Widgets rufen Repositorys nicht direkt auf, keine fachliche State-Logik.
+- `ChangeNotifier`, eigene globale Singleton-States, verstreute `setState`-Logik: nicht für Feature-State.
+- `setState` nur für rein lokale, kurzlebige UI-Zustände erlaubt, z.B. temporär geöffnetes Menü.
+- Globale Navigation: eigener `AppNavigationBloc`; Energie und Rooms je eigene Feature-BLoCs.
+- `Cubit` kein Ersatz, wenn Ablauf fachliche Events braucht. Dann vollständiger BLoC mit Events und States.
 
 Beispielstruktur:
 
@@ -129,33 +129,33 @@ features/energy/application/
 └── energy_state.dart
 ```
 
-Ein BLoC orchestriert Use Cases und übersetzt deren Ergebnisse in States. Er enthält weder Widget-Code noch direkte API-/Datenbankzugriffe.
+BLoC orchestriert Use Cases, übersetzt Ergebnisse in States. Kein Widget-Code, keine direkten API-/Datenbankzugriffe.
 
 ### Infrastructure
 
-Infrastructure übersetzt die Außenwelt in Domain-Daten.
+Infrastructure übersetzt Außenwelt in Domain-Daten.
 
-Jede externe Quelle wird über drei Bausteine organisiert:
+Jede externe Quelle über drei Bausteine:
 
 1. `DataSource`: technische Kommunikation mit API, Home Assistant oder Speicher.
 2. `Model/DTO`: JSON-nahe Datenstruktur mit `fromJson`/`toJson`.
-3. `Repository`: implementiert den Domain-Vertrag, konvertiert DTOs zu Entities und wandelt technische Exceptions in Domain-Failures um.
+3. `Repository`: implementiert Domain-Vertrag, konvertiert DTOs zu Entities, wandelt technische Exceptions in Domain-Failures um.
 
-`try/catch` für technische Quellen gehört in die Repository-Grenze, nicht in Widgets.
+`try/catch` für technische Quellen gehört in Repository-Grenze, nicht in Widgets.
 
 ### Presentation
 
-Presentation ist Flutter-spezifisch und möglichst „dumm“.
+Presentation ist Flutter-spezifisch, möglichst „dumm".
 
-- Pages komponieren den Bildschirm.
+- Pages komponieren Bildschirm.
 - Widgets stellen Werte dar.
-- Events werden an Application-Controller oder Use Cases weitergegeben.
+- Events gehen an Application-Controller oder Use Cases.
 - Validierung und fachliche Berechnung gehören nicht in Widgets.
-- Feature-Widgets dürfen nur auf das eigene Feature und `core/widgets` zugreifen.
+- Feature-Widgets greifen nur auf eigenes Feature und `core/widgets` zu.
 
 ## 5. Globale App-Shell und Navigation
 
-Die globale Shell liegt außerhalb der Features:
+Globale Shell liegt außerhalb der Features:
 
 ```text
 app/shell/
@@ -164,16 +164,16 @@ app/shell/
 └── app_navigation.dart
 ```
 
-Die Shell darf nur globale Verantwortlichkeiten enthalten:
+Shell enthält nur globale Verantwortlichkeiten:
 
 - Hintergrund und globales Layout
 - globale Navigation
 - globale Routen
 - generische Slots für seitenspezifische Aktionen
 
-Sie darf keine Energy-, Rooms- oder Home-Widgets importieren, um deren Inhalt selbst zu implementieren. Seitenspezifische Inhalte werden über Routen, Slots oder Composition im `app.dart` eingespeist.
+Keine Energy-, Rooms- oder Home-Widget-Imports zur eigenen Implementierung. Seitenspezifische Inhalte über Routen, Slots oder Composition in `app.dart` eingespeist.
 
-Beispiel für einen neutralen Slot:
+Beispiel neutraler Slot:
 
 ```dart
 AppNavigationBar(
@@ -181,17 +181,17 @@ AppNavigationBar(
 )
 ```
 
-Die Energie-Seite kann dort einen Zeitraum-Selector liefern, Rooms einen Geräte-Button. Die Navigation selbst kennt nur `Widget?` oder einen globalen Vertrag.
+Energie-Seite liefert dort Zeitraum-Selector, Rooms einen Geräte-Button. Navigation selbst kennt nur `Widget?` oder globalen Vertrag.
 
 ## 6. Regeln für Pages und Widgets
 
-- Eine Page gehört genau zu einem Feature.
-- Eine Page darf keine andere Feature-Page direkt einbetten.
-- Ein Widget kommt in `widgets/`, sobald es außerhalb einer einzelnen Page wiederverwendbar ist.
-- Ein Widget kommt in `core/widgets/`, wenn es keine fachliche Bedeutung hat, zum Beispiel `GlassCard`.
-- Ein Widget mit Energiebegriffen wie `EnergyChartCard` bleibt unter `features/energy/presentation/widgets`.
-- Private Hilfswidgets dürfen in einer Page-Datei bleiben, solange sie nicht wiederverwendet werden.
-- Dateien sollen nach ihrer fachlichen Rolle benannt werden, nicht nach einem Sammelbegriff wie `dashboard_page.dart`.
+- Page gehört genau zu einem Feature.
+- Page bettet keine andere Feature-Page direkt ein.
+- Widget kommt in `widgets/`, sobald außerhalb einzelner Page wiederverwendbar.
+- Widget kommt in `core/widgets/`, wenn keine fachliche Bedeutung, z.B. `GlassCard`.
+- Widget mit Energiebegriffen wie `EnergyChartCard` bleibt unter `features/energy/presentation/widgets`.
+- Private Hilfswidgets dürfen in Page-Datei bleiben, solange nicht wiederverwendet.
+- Dateien benannt nach fachlicher Rolle, nicht nach Sammelbegriff wie `dashboard_page.dart`.
 
 ## 7. Datenfluss
 
@@ -209,11 +209,11 @@ Infrastructure Repository
 Data Source / Home Assistant / Local Storage
 ```
 
-Die Rückrichtung liefert Domain-Entities oder `Failure`-Ergebnisse zurück. Widgets kennen weder DTOs noch technische Exceptions.
+Rückrichtung liefert Domain-Entities oder `Failure`-Ergebnisse zurück. Widgets kennen weder DTOs noch technische Exceptions.
 
 ## 8. Tests
 
-Tests spiegeln die Schichten:
+Tests spiegeln Schichten:
 
 ```text
 test/
@@ -231,12 +231,12 @@ test/
 
 ## 9. Neue Features: Entscheidungsregeln
 
-Vor dem Anlegen eines neuen Ordners muss geklärt werden:
+Vor Anlegen neuen Ordners klären:
 
-1. Ist es fachlich ein neues Feature oder nur ein Widget des bestehenden Features?
-2. Welche Domain-Entität oder welcher Use Case ist der zentrale Begriff?
-3. Welche Datenquelle wird benötigt?
-4. Welche Teile sind global und welche gehören ausschließlich zum Feature?
-5. Welche Schicht darf die neue Klasse importieren?
+1. Fachlich neues Feature oder nur Widget bestehenden Features?
+2. Welche Domain-Entität oder Use Case zentraler Begriff?
+3. Welche Datenquelle nötig?
+4. Was global, was nur zum Feature?
+5. Welche Schicht darf neue Klasse importieren?
 
-Wenn eine Klasse nicht eindeutig einer Schicht zugeordnet werden kann, wird sie nicht in eine Sammeldatei gelegt. Stattdessen wird die Verantwortung zuerst fachlich getrennt.
+Klasse nicht eindeutig einer Schicht zuordenbar → nicht in Sammeldatei. Verantwortung zuerst fachlich trennen.

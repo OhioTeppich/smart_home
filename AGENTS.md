@@ -2,50 +2,50 @@
 
 ## Projekt
 
-Smart Home ist eine Flutter-Anwendung für die Übersicht und Steuerung eines Smart Homes.
+Smart Home: Flutter-App für Übersicht und Steuerung Smart Home.
 
 - Flutter-Paket: `smart_home`
 - Sichtbarer Produktname: `Smart Home`
 - Hauptcode: `lib/`
 - Tests: `test/`
-- Plattformen: Android, iOS und Web
+- Plattformen: Android, iOS, Web
 
 ## Arbeitsweise für KI-Agenten
 
-1. Vor Änderungen zuerst den bestehenden Code, die betroffenen Tests und die relevante Dokumentation lesen. Für einen schnellen Architekturüberblick zuerst `graphify-out/GRAPH_REPORT.md` lesen bzw. `graphify query "<Frage>"` ausführen, falls `graphify-out/` vorhanden ist, statt den gesamten Code manuell zu durchsuchen.
-2. Änderungen klein und fachlich fokussiert halten.
-3. Bestehende Funktionalität und öffentliche Schnittstellen nicht ohne ausdrücklichen Auftrag ändern.
-4. Keine Secrets, Tokens, lokalen SDK-Pfade oder Gerätekonfigurationen committen.
-5. Generierte Dateien nicht manuell dauerhaft pflegen, wenn sie durch Flutter oder ein anderes Build-Tool erzeugt werden.
-6. Vor dem Abschluss die geänderten Dateien, den Git-Status und passende Tests prüfen.
-7. Nach erfolgreicher Prüfung den Git-Workflow automatisch bis zum Push ausführen; nicht auf eine zusätzliche Commit- oder Push-Aufforderung warten.
-8. Bei nicht ausgeführten Prüfungen den Grund ausdrücklich nennen und nicht automatisch pushen, wenn dadurch die Fehlerfreiheit nicht beurteilt werden kann.
+1. Vor Änderungen: bestehenden Code, betroffene Tests, relevante Doku lesen. Für schnellen Architekturüberblick zuerst `graphify-out/GRAPH_REPORT.md` lesen bzw. `graphify query "<Frage>"` ausführen, falls `graphify-out/` vorhanden — statt Code manuell durchsuchen.
+2. Änderungen klein, fachlich fokussiert halten.
+3. Bestehende Funktionalität, öffentliche Schnittstellen nicht ändern ohne ausdrücklichen Auftrag.
+4. Keine Secrets, Tokens, lokale SDK-Pfade, Gerätekonfigurationen committen.
+5. Generierte Dateien nicht manuell pflegen, wenn durch Flutter oder anderes Build-Tool erzeugt.
+6. Vor Abschluss: geänderte Dateien, Git-Status, passende Tests prüfen.
+7. Nach erfolgreicher Prüfung: Git-Workflow automatisch bis Push ausführen; nicht auf zusätzliche Commit-/Push-Aufforderung warten.
+8. Bei nicht ausgeführten Prüfungen: Grund nennen, nicht automatisch pushen, wenn Fehlerfreiheit dadurch nicht beurteilbar.
 
 ## Architektur
 
-Die verbindlichen Architekturregeln stehen in [ARCHITECTURE.md](ARCHITECTURE.md).
+Verbindliche Architekturregeln: [ARCHITECTURE.md](ARCHITECTURE.md).
 
-Zusätzlich existiert ein automatisch gepflegter Wissensgraph in `graphify-out/` (Nodes, Kanten, Community-Struktur des gesamten Repos). Ein Git-Post-Commit-Hook aktualisiert `graph.json` nach jedem Commit automatisch für geänderte Code-Dateien; bei Doku-/Bild-Änderungen `graphify --update` manuell ausführen. Nicht selbst pflegen oder manuell umschreiben.
+Zusätzlich: automatisch gepflegter Wissensgraph in `graphify-out/` (Nodes, Kanten, Community-Struktur ganzes Repo). Git-Post-Commit-Hook aktualisiert `graph.json` nach jedem Commit automatisch für geänderte Code-Dateien; bei Doku-/Bild-Änderungen `graphify --update` manuell ausführen. Nicht selbst pflegen oder manuell umschreiben.
 
 Grundregeln:
 
-- `lib/main.dart` bleibt der minimale Prozesseinstieg.
-- `lib/app.dart` ist der Composition Root und verdrahtet die Anwendung.
-- Globale Shell- und Navigationslogik gehört nach `lib/app/`.
-- Feature-Code gehört nach `lib/features/{feature}/` und wird nach Domain, Application, Infrastructure und Presentation getrennt.
-- Domain-Code darf keine Flutter-, API-, Datenbank- oder Infrastrukturabhängigkeiten importieren.
-- Infrastruktur implementiert Domain-Repository-Verträge und kapselt externe Quellen.
+- `lib/main.dart` bleibt minimaler Prozesseinstieg.
+- `lib/app.dart`: Composition Root, verdrahtet Anwendung.
+- Globale Shell-/Navigationslogik gehört nach `lib/app/`.
+- Feature-Code gehört nach `lib/features/{feature}/`, getrennt nach Domain, Application, Infrastructure, Presentation.
+- Domain-Code: keine Flutter-, API-, Datenbank- oder Infrastrukturabhängigkeiten importieren.
+- Infrastruktur implementiert Domain-Repository-Verträge, kapselt externe Quellen.
 - Feature-übergreifende direkte Abhängigkeiten vermeiden.
-- Neuen Code an den vorhandenen Stil und die bestehende Struktur anpassen; keine umfassenden Refactorings als Nebenwirkung einer kleinen Änderung.
+- Neuen Code an vorhandenen Stil/Struktur anpassen; keine umfassenden Refactorings als Nebenwirkung kleiner Änderung.
 
 ## Namens- und UI-Regeln
 
-- Dart-Dateien und technische Bezeichner verwenden `snake_case`.
-- Dart-Klassen und Enums verwenden `PascalCase`.
-- Variablen und Methoden verwenden `camelCase`.
-- Der sichtbare Produktname lautet immer `Smart Home`.
-- Das Flutter-Paket und technische Projektbezeichner lauten `smart_home`.
-- Die bestehenden UI-Texte sind deutsch; neue sichtbare Texte daher auf Deutsch formulieren, sofern keine Produktanforderung etwas anderes vorgibt.
+- Dart-Dateien, technische Bezeichner: `snake_case`.
+- Dart-Klassen, Enums: `PascalCase`.
+- Variablen, Methoden: `camelCase`.
+- Sichtbarer Produktname immer `Smart Home`.
+- Flutter-Paket, technische Projektbezeichner: `smart_home`.
+- Bestehende UI-Texte deutsch; neue sichtbare Texte daher deutsch formulieren, sofern keine Produktanforderung anders vorgibt.
 
 ## Verifikation
 
@@ -57,33 +57,33 @@ flutter analyze
 flutter test
 ```
 
-Bei Änderungen an einer bestimmten Plattform zusätzlich den passenden Build prüfen, zum Beispiel:
+Bei Änderungen an bestimmter Plattform zusätzlich passenden Build prüfen, zum Beispiel:
 
 ```powershell
 flutter build web
 flutter build apk --debug
 ```
 
-Wenn Flutter-Kommandos wegen der lokalen Umgebung nicht ausführbar sind, stattdessen mindestens Imports, Namensreferenzen, Konfigurationen und den Git-Diff statisch prüfen.
+Wenn Flutter-Kommandos wegen lokaler Umgebung nicht ausführbar: stattdessen mindestens Imports, Namensreferenzen, Konfigurationen, Git-Diff statisch prüfen.
 
 ## Git und GitHub
 
 - Standardbranch: `main`
 - Remote: `origin`
 - Repository: `OhioTeppich/smart_home`
-- Jeder abgeschlossene, fehlerfreie Arbeitsauftrag wird als eigener Commit festgehalten und nach `origin/main` gepusht.
-- Keine Sammel-Commits über mehrere unabhängige Aufgaben bilden.
-- Commit-Nachrichten sind kurz, sachlich und beschreiben die Änderung im Imperativ, zum Beispiel `Add room device controls` oder `Fix energy chart loading`.
-- Vor jeder Änderung zuerst `git status --short --branch` prüfen. Bereits vorhandene Änderungen gehören dem Benutzer und dürfen nicht überschrieben, verworfen oder ungefragt mit committed werden.
-- Nach der Implementierung nur die zum Auftrag gehörenden Dateien gezielt stagen, niemals blind alle Dateien mit `git add -A`.
-- Vor dem Commit den Staging-Inhalt mit `git diff --cached --stat` und `git diff --cached --check` prüfen.
-- Vor dem Commit die passende Verifikation ausführen: mindestens `flutter analyze` und `flutter test` bei Dart-/Flutter-Änderungen; bei Plattformänderungen zusätzlich den betroffenen Build.
-- Wenn die Prüfungen erfolgreich sind: Commit erstellen, mit `git push origin main` pushen und anschließend mit `git status --short --branch` verifizieren, dass der lokale Branch mit `origin/main` synchron ist.
-- Wenn Tests, Analyse oder Build fehlschlagen, bei Merge-Konflikten, fehlender Authentifizierung oder unklaren Fremdänderungen nicht committen und nicht pushen. Fehler und benötigten nächsten Schritt melden.
-- Bei nicht ausführbaren Prüfungen nur dann committen, wenn das Risiko begrenzt und die Einschränkung transparent dokumentiert ist; automatisch pushen erst nach ausdrücklicher Freigabe.
-- Nicht committen: `android/local.properties`, `.dart_tool/`, `build/`, Flutter-Plugins, IDE-Artefakte, Tokens, lokale Schlüssel und andere maschinen- oder benutzerspezifische Dateien.
-- Keine Force-Pushes, History-Rewrites, Branch-Löschungen, Releases oder Änderungen an GitHub-Einstellungen automatisch ausführen.
-- Bei großen, riskanten oder fachlich unklaren Änderungen vor Commit und Push Rücksprache halten.
+- Jeder abgeschlossene, fehlerfreie Arbeitsauftrag: eigener Commit, gepusht nach `origin/main`.
+- Keine Sammel-Commits über mehrere unabhängige Aufgaben.
+- Commit-Nachrichten kurz, sachlich, Imperativ, zum Beispiel `Add room device controls` oder `Fix energy chart loading`.
+- Vor jeder Änderung: `git status --short --branch` prüfen. Vorhandene Änderungen gehören Benutzer — nicht überschreiben, verwerfen oder ungefragt mitcommitten.
+- Nach Implementierung: nur zum Auftrag gehörende Dateien gezielt stagen, nie blind `git add -A`.
+- Vor Commit: Staging-Inhalt mit `git diff --cached --stat` und `git diff --cached --check` prüfen.
+- Vor Commit: passende Verifikation ausführen — mindestens `flutter analyze` und `flutter test` bei Dart-/Flutter-Änderungen; bei Plattformänderungen zusätzlich betroffenen Build.
+- Bei Erfolg: Commit erstellen, `git push origin main`, danach mit `git status --short --branch` verifizieren, lokaler Branch synchron mit `origin/main`.
+- Bei fehlgeschlagenen Tests, Analyse oder Build, Merge-Konflikten, fehlender Authentifizierung oder unklaren Fremdänderungen: nicht committen, nicht pushen. Fehler und nächsten Schritt melden.
+- Bei nicht ausführbaren Prüfungen: nur committen wenn Risiko begrenzt, Einschränkung transparent dokumentiert; automatisch pushen erst nach ausdrücklicher Freigabe.
+- Nicht committen: `android/local.properties`, `.dart_tool/`, `build/`, Flutter-Plugins, IDE-Artefakte, Tokens, lokale Schlüssel, andere maschinen-/benutzerspezifische Dateien.
+- Keine Force-Pushes, History-Rewrites, Branch-Löschungen, Releases oder GitHub-Einstellungsänderungen automatisch ausführen.
+- Bei großen, riskanten oder fachlich unklaren Änderungen: vor Commit/Push Rücksprache halten.
 
 ### Standardablauf
 
@@ -103,13 +103,13 @@ Commit mit sachlicher Nachricht erstellen
 Remote-Synchronität und Ergebnis prüfen
 ```
 
-Der Workflow gilt für normale abgeschlossene Entwicklungsaufgaben. Dokumentationsänderungen und kleine Konfigurationsänderungen werden ebenfalls committed und gepusht, sofern keine Prüfung fehlschlägt und keine der Sicherheitsgrenzen greift.
+Workflow gilt für normale abgeschlossene Entwicklungsaufgaben. Dokumentationsänderungen, kleine Konfigurationsänderungen: ebenfalls committed und gepusht, sofern keine Prüfung fehlschlägt und keine Sicherheitsgrenze greift.
 
 ## Kommunikation
 
 Am Ende jeder Aufgabe kurz zusammenfassen:
 
-- welche Dateien oder Bereiche geändert wurden,
-- welche Prüfungen erfolgreich waren,
-- welche Prüfungen nicht ausgeführt werden konnten,
-- welche offenen Risiken oder nächsten Schritte bestehen.
+- welche Dateien/Bereiche geändert,
+- welche Prüfungen erfolgreich,
+- welche Prüfungen nicht ausführbar,
+- welche offenen Risiken oder nächsten Schritte.
