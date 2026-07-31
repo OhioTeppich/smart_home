@@ -62,6 +62,6 @@ class OverviewPage extends StatelessWidget {
         ),
       ],
     );
-    return HorizontalPageScaffold(sections: [chart, metrics]);
+    return HorizontalPageScaffold(sections: [metrics, chart]);
   }
 }
