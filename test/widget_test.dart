@@ -29,6 +29,12 @@ void main() {
     expect(find.text('Wetter heute'), findsOneWidget);
     await tester.tap(find.byIcon(Icons.bolt_rounded).first);
     await tester.pumpAndSettle();
+
+    // Chart and metrics are now separate horizontally swipeable panels;
+    // the metric cards live on the second panel.
+    await tester.drag(find.byType(PageView).last, const Offset(-800, 0));
+    await tester.pumpAndSettle();
+
     expect(find.text('Verbrauch heute'), findsOneWidget);
     expect(find.text('6,14'), findsOneWidget);
   });
