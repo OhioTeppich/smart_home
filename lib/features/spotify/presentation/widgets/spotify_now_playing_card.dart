@@ -161,71 +161,101 @@ class _SpotifyTrackView extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: track.albumArtUrl == null
-              ? Container(
-                  width: 128,
-                  height: 128,
-                  color: AppColors.blue.withOpacity(.15),
-                  child: const Icon(
-                    Icons.album_rounded,
-                    size: 48,
-                    color: AppColors.blueDark,
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: track.albumArtUrl == null
+                  ? Container(
+                      width: 64,
+                      height: 64,
+                      color: AppColors.blue.withOpacity(.15),
+                      child: const Icon(
+                        Icons.album_rounded,
+                        color: AppColors.blueDark,
+                      ),
+                    )
+                  : Image.network(
+                      track.albumArtUrl!,
+                      width: 64,
+                      height: 64,
+                      fit: BoxFit.cover,
+                    ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    track.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                    ),
                   ),
-                )
-              : Image.network(
-                  track.albumArtUrl!,
-                  width: 128,
-                  height: 128,
-                  fit: BoxFit.cover,
-                ),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          track.name,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 17),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          track.artistsLabel,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          textAlign: TextAlign.center,
-          style: const TextStyle(color: AppColors.muted, fontSize: 13),
+                  Text(
+                    track.artistsLabel,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: AppColors.muted,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 14),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: LinearProgressIndicator(
-            value: progress,
-            minHeight: 5,
-            backgroundColor: AppColors.blue.withOpacity(.15),
-            valueColor: const AlwaysStoppedAnimation(AppColors.blueDark),
-          ),
+        Row(
+          children: [
+            Text(
+              _formatDuration(nowPlaying.progressMs),
+              style: const TextStyle(color: AppColors.muted, fontSize: 11),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: progress,
+                  minHeight: 4,
+                  backgroundColor: AppColors.blue.withOpacity(.15),
+                  valueColor: const AlwaysStoppedAnimation(
+                    AppColors.blueDark,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              _formatDuration(track.durationMs),
+              style: const TextStyle(color: AppColors.muted, fontSize: 11),
+            ),
+          ],
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             _SpotifyControlButton(
               icon: Icons.skip_previous_rounded,
-              size: 28,
               onPressed: () => context.read<SpotifyBloc>().add(
                 const SpotifyPlaybackCommandRequested(
                   SpotifyPlaybackCommand.skipPrevious,
                 ),
               ),
             ),
-            const SizedBox(width: 8),
             _SpotifyControlButton(
               icon: nowPlaying.isPlaying
-                  ? Icons.pause_circle_filled_rounded
-                  : Icons.play_circle_fill_rounded,
-              size: 44,
+                  ? Icons.pause_rounded
+                  : Icons.play_arrow_rounded,
               onPressed: () => context.read<SpotifyBloc>().add(
                 SpotifyPlaybackCommandRequested(
                   nowPlaying.isPlaying
@@ -234,10 +264,8 @@ class _SpotifyTrackView extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(width: 8),
             _SpotifyControlButton(
               icon: Icons.skip_next_rounded,
-              size: 28,
               onPressed: () => context.read<SpotifyBloc>().add(
                 const SpotifyPlaybackCommandRequested(
                   SpotifyPlaybackCommand.skipNext,
@@ -247,51 +275,55 @@ class _SpotifyTrackView extends StatelessWidget {
           ],
         ),
         if (nowPlaying.volumePercent != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 6),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _SpotifyControlButton(
-                  icon: Icons.volume_down_rounded,
-                  size: 22,
-                  onPressed: () => context.read<SpotifyBloc>().add(
-                    const SpotifyVolumeChangeRequested(-10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _SpotifyControlButton(
+                icon: Icons.volume_down_rounded,
+                size: 18,
+                onPressed: () => context.read<SpotifyBloc>().add(
+                  const SpotifyVolumeChangeRequested(-10),
+                ),
+              ),
+              SizedBox(
+                width: 30,
+                child: Text(
+                  '${nowPlaying.volumePercent}%',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: AppColors.muted,
+                    fontSize: 11,
                   ),
                 ),
-                SizedBox(
-                  width: 36,
-                  child: Text(
-                    '${nowPlaying.volumePercent}%',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: AppColors.muted,
-                      fontSize: 12,
-                    ),
-                  ),
+              ),
+              _SpotifyControlButton(
+                icon: Icons.volume_up_rounded,
+                size: 18,
+                onPressed: () => context.read<SpotifyBloc>().add(
+                  const SpotifyVolumeChangeRequested(10),
                 ),
-                _SpotifyControlButton(
-                  icon: Icons.volume_up_rounded,
-                  size: 22,
-                  onPressed: () => context.read<SpotifyBloc>().add(
-                    const SpotifyVolumeChangeRequested(10),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         if (commandError != null)
           Padding(
-            padding: const EdgeInsets.only(top: 8),
+            padding: const EdgeInsets.only(top: 4),
             child: Text(
               commandError!.message,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.muted, fontSize: 12),
+              style: const TextStyle(color: AppColors.muted, fontSize: 11),
             ),
           ),
       ],
     );
   }
+}
+
+String _formatDuration(int milliseconds) {
+  final totalSeconds = milliseconds ~/ 1000;
+  final minutes = totalSeconds ~/ 60;
+  final seconds = totalSeconds % 60;
+  return '$minutes:${seconds.toString().padLeft(2, '0')}';
 }
 
 class _SpotifyControlButton extends StatelessWidget {
