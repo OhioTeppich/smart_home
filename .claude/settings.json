@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "EnterPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -d \"graphify-out\" ]; then echo \"{\\\"hookSpecificOutput\\\":{\\\"hookEventName\\\":\\\"PreToolUse\\\",\\\"additionalContext\\\":\\\"graphify-out/ vorhanden. Vor Planerstellung zuerst graphify-out/GRAPH_REPORT.md lesen bzw. graphify query <Frage> ausfuehren fuer Architekturueberblick, statt Code manuell zu durchsuchen. Bei Bedarf zusaetzlich tiefer im Projekt recherchieren.\\\"}}\"; else echo \"{}\"; fi",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
