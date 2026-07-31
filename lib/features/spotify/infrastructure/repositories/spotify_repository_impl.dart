@@ -9,6 +9,7 @@ import '../../domain/value_objects/spotify_auth_config.dart';
 import '../data_sources/spotify_auth_data_source.dart';
 import '../data_sources/spotify_local_data_source.dart';
 import '../data_sources/spotify_remote_data_source.dart';
+import '../data_sources/spotify_web_playback_sdk.dart';
 import '../models/spotify_token_response_dto.dart';
 
 class SpotifyRepositoryImpl implements SpotifyRepository {
@@ -25,6 +26,7 @@ class SpotifyRepositoryImpl implements SpotifyRepository {
 
   String? _accessToken;
   DateTime? _accessTokenExpiry;
+  SpotifyWebPlaybackSdk? _webPlayback;
 
   @override
   Future<SpotifyAuthConfig?> loadAuthConfig() async {
@@ -105,6 +107,26 @@ class SpotifyRepositoryImpl implements SpotifyRepository {
     } on SpotifyUnauthenticatedFailure {
       final refreshed = await _validAccessToken(force: true);
       await _remoteDataSource.setVolume(refreshed, percent);
+    }
+  });
+
+  @override
+  Future<void> playOnThisDevice() => _guard(() async {
+    final sdk = _webPlayback ??= SpotifyWebPlaybackSdk(
+      getAccessToken: () => _validAccessToken(),
+    );
+    final String deviceId;
+    try {
+      deviceId = await sdk.ensureConnected();
+    } on StateError catch (error) {
+      throw SpotifyUnexpectedFailure(error.message);
+    }
+    final token = await _validAccessToken();
+    try {
+      await _remoteDataSource.transferPlaybackToDevice(token, deviceId);
+    } on SpotifyUnauthenticatedFailure {
+      final refreshed = await _validAccessToken(force: true);
+      await _remoteDataSource.transferPlaybackToDevice(refreshed, deviceId);
     }
   });
 

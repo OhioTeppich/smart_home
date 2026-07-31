@@ -32,6 +32,7 @@ class _FakeSpotifyRepository implements SpotifyRepository {
   final calls = <String>[];
   final commands = <SpotifyPlaybackCommand>[];
   final volumeChanges = <int>[];
+  var playHereCalls = 0;
 
   @override
   Future<SpotifyAuthConfig?> loadAuthConfig() async => config;
@@ -75,6 +76,13 @@ class _FakeSpotifyRepository implements SpotifyRepository {
   Future<void> setVolume(int percent) async {
     volumeChanges.add(percent);
     if (commandError != null) throw commandError!;
+  }
+
+  @override
+  Future<void> playOnThisDevice() async {
+    playHereCalls++;
+    if (commandError != null) throw commandError!;
+    nowPlaying = _track();
   }
 }
 
@@ -301,5 +309,33 @@ void main() {
     await Future.delayed(const Duration(milliseconds: 500));
 
     expect(repository.volumeChanges, isEmpty);
+  });
+
+  test('SpotifyPlayHereRequested transfers playback and re-polls', () async {
+    repository.authenticated = true;
+    bloc = SpotifyBloc(repository);
+    bloc.add(const SpotifyStarted());
+    await Future.delayed(Duration.zero);
+    expect(bloc.state, isA<SpotifyIdle>());
+
+    bloc.add(const SpotifyPlayHereRequested());
+    await Future.delayed(const Duration(milliseconds: 1600));
+
+    expect(repository.playHereCalls, 1);
+    expect(bloc.state, isA<SpotifyPlaying>());
+  });
+
+  test('a failing SpotifyPlayHereRequested surfaces commandError on Idle', () async {
+    repository.authenticated = true;
+    bloc = SpotifyBloc(repository);
+    bloc.add(const SpotifyStarted());
+    await Future.delayed(Duration.zero);
+
+    repository.commandError = const SpotifyNoActiveDeviceFailure();
+    bloc.add(const SpotifyPlayHereRequested());
+    await Future.delayed(Duration.zero);
+
+    final state = bloc.state as SpotifyIdle;
+    expect(state.commandError, isA<SpotifyNoActiveDeviceFailure>());
   });
 }

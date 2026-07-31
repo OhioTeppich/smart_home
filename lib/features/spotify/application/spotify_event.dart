@@ -58,3 +58,7 @@ class SpotifyVolumeChangeRequested extends SpotifyEvent {
   @override
   List<Object?> get props => [delta];
 }
+
+class SpotifyPlayHereRequested extends SpotifyEvent {
+  const SpotifyPlayHereRequested();
+}

@@ -17,6 +17,7 @@ class SpotifyBloc extends Bloc<SpotifyEvent, SpotifyState> {
     on<SpotifyPollTicked>(_onPollTicked);
     on<SpotifyPlaybackCommandRequested>(_onPlaybackCommandRequested);
     on<SpotifyVolumeChangeRequested>(_onVolumeChangeRequested);
+    on<SpotifyPlayHereRequested>(_onPlayHereRequested);
   }
 
   final SpotifyRepository _repository;
@@ -129,15 +130,28 @@ class SpotifyBloc extends Bloc<SpotifyEvent, SpotifyState> {
     await _runMutatingCommand(emit, () => _repository.setVolume(target));
   }
 
-  /// Shared by playback commands and volume changes: run [action], surface
-  /// a transient [SpotifyPlaying.commandError] on failure (without losing
-  /// the currently displayed track), then re-poll shortly after — instead
-  /// of waiting for the next scheduled tick (up to 8s away) — so the UI
-  /// reflects the actual new state quickly either way.
+  Future<void> _onPlayHereRequested(
+    SpotifyPlayHereRequested event,
+    Emitter<SpotifyState> emit,
+  ) => _runMutatingCommand(
+    emit,
+    () => _repository.playOnThisDevice(),
+    // SDK device registration + playback transfer takes noticeably longer
+    // than a plain play/pause/skip call.
+    delay: const Duration(milliseconds: 1500),
+  );
+
+  /// Shared by playback commands, volume changes and "play here": run
+  /// [action], surface a transient `commandError` on the current
+  /// Playing/Idle state on failure (without losing the currently displayed
+  /// track), then re-poll after [delay] — instead of waiting for the next
+  /// scheduled tick (up to 8s away) — so the UI reflects the actual new
+  /// state quickly either way.
   Future<void> _runMutatingCommand(
     Emitter<SpotifyState> emit,
-    Future<void> Function() action,
-  ) async {
+    Future<void> Function() action, {
+    Duration delay = const Duration(milliseconds: 400),
+  }) async {
     final current = state;
     try {
       await action();
@@ -146,17 +160,22 @@ class SpotifyBloc extends Bloc<SpotifyEvent, SpotifyState> {
       emit(SpotifyUnauthenticated(authConfig: state.authConfig));
       return;
     } on SpotifyFailure catch (failure) {
-      if (current is SpotifyPlaying) {
-        emit(
-          SpotifyPlaying(
-            authConfig: current.authConfig,
-            nowPlaying: current.nowPlaying,
-            commandError: failure,
-          ),
-        );
+      switch (current) {
+        case SpotifyPlaying():
+          emit(
+            SpotifyPlaying(
+              authConfig: current.authConfig,
+              nowPlaying: current.nowPlaying,
+              commandError: failure,
+            ),
+          );
+        case SpotifyIdle():
+          emit(SpotifyIdle(authConfig: current.authConfig, commandError: failure));
+        default:
+          break;
       }
     }
-    await Future.delayed(const Duration(milliseconds: 400));
+    await Future.delayed(delay);
     add(const SpotifyPollTicked());
   }
 

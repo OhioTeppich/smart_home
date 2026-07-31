@@ -34,7 +34,8 @@ class SpotifyNowPlayingCard extends StatelessWidget {
             SpotifyInitial() || SpotifyAuthenticating() =>
               const _SpotifyLoading(),
             SpotifyUnauthenticated() => const _SpotifyConnectPrompt(),
-            SpotifyIdle() => const _SpotifyEmptyState(),
+            SpotifyIdle(:final commandError) =>
+              _SpotifyEmptyState(commandError: commandError),
             SpotifyError() => const Text(
               'Spotify ist derzeit nicht erreichbar.',
               style: TextStyle(color: AppColors.muted),
@@ -65,26 +66,43 @@ class _SpotifyLoading extends StatelessWidget {
 }
 
 class _SpotifyEmptyState extends StatelessWidget {
-  const _SpotifyEmptyState();
+  const _SpotifyEmptyState({this.commandError});
+
+  final SpotifyFailure? commandError;
 
   @override
-  Widget build(BuildContext context) => const Center(
+  Widget build(BuildContext context) => Center(
     child: Padding(
-      padding: EdgeInsets.symmetric(vertical: 16),
+      padding: const EdgeInsets.symmetric(vertical: 12),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.music_off_rounded, size: 28, color: AppColors.muted),
-          SizedBox(height: 8),
-          Text(
+          const Icon(Icons.music_off_rounded, size: 28, color: AppColors.muted),
+          const SizedBox(height: 8),
+          const Text(
             'Gerade läuft nichts',
             style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
           ),
-          SizedBox(height: 2),
-          Text(
-            'Wiedergabe auf einem Gerät starten',
-            style: TextStyle(color: AppColors.muted, fontSize: 11),
+          const SizedBox(height: 10),
+          OutlinedButton(
+            onPressed: () => context.read<SpotifyBloc>().add(
+              const SpotifyPlayHereRequested(),
+            ),
+            style: OutlinedButton.styleFrom(
+              visualDensity: VisualDensity.compact,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+            ),
+            child: const Text('Hier abspielen', style: TextStyle(fontSize: 12)),
           ),
+          if (commandError != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                commandError!.message,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: AppColors.muted, fontSize: 11),
+              ),
+            ),
         ],
       ),
     ),

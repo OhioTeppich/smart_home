@@ -19,8 +19,12 @@ class SpotifyAuthDataSource {
 
   static const _authorizeHost = 'accounts.spotify.com';
   static const _tokenUri = 'https://accounts.spotify.com/api/token';
+  // streaming/user-read-email/user-read-private are required by the Web
+  // Playback SDK (see SpotifyWebPlaybackSdk) to register this browser tab
+  // as a Spotify Connect device.
   static const _scope =
-      'user-read-playback-state user-modify-playback-state';
+      'user-read-playback-state user-modify-playback-state '
+      'streaming user-read-email user-read-private';
 
   Future<SpotifyTokenResponseDto> authenticate(
     SpotifyAuthConfig config,

@@ -30,4 +30,10 @@ abstract class SpotifyRepository {
   /// [percent] is clamped to 0-100 by the caller before this is invoked.
   /// Throws a [SpotifyFailure] subtype on failure.
   Future<void> setVolume(int percent);
+
+  /// Registers this browser tab as a Spotify Connect device (via the Web
+  /// Playback SDK) and transfers/resumes playback onto it. Throws a
+  /// [SpotifyFailure] subtype on failure (e.g. no Premium, no prior
+  /// playback context to resume, or the SDK failing to connect).
+  Future<void> playOnThisDevice();
 }
