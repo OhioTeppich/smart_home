@@ -12,7 +12,6 @@ import '../../features/energy/presentation/pages/energy_analysis_page.dart'
 import '../../features/energy/presentation/pages/energy_overview_page.dart'
     as energyOverview;
 import '../../features/energy/presentation/widgets/energy_period_selector.dart';
-import '../../features/ha_connection/presentation/pages/ha_connection_settings_page.dart';
 import '../../features/home/presentation/pages/home_page.dart' as home;
 import '../../features/rooms/presentation/pages/room_page.dart';
 import '../../features/rooms/presentation/widgets/room_dialogs.dart';
@@ -21,6 +20,7 @@ import 'app_navigation_bloc.dart';
 import 'app_navigation_event.dart';
 import 'app_navigation_state.dart';
 import 'app_section.dart';
+import 'settings_hub_page.dart';
 
 class AppShell extends StatelessWidget {
   const AppShell({super.key});
@@ -141,7 +141,7 @@ class _AppShellViewState extends State<_AppShellView> {
                     .read<AppNavigationBloc>()
                     .add(AppNavigationSectionSelected(value)),
                 trailing: _buildNavigationTrailing(section, period, compact),
-                onOpenSettings: _openHaConnectionSettings,
+                onOpenSettings: _openSettings,
               ),
             ),
           ],
@@ -173,9 +173,9 @@ class _AppShellViewState extends State<_AppShellView> {
     return null;
   }
 
-  void _openHaConnectionSettings() {
+  void _openSettings() {
     Navigator.of(context).push<void>(
-      MaterialPageRoute(builder: (_) => const HaConnectionSettingsPage()),
+      MaterialPageRoute(builder: (_) => const SettingsHubPage()),
     );
   }
 

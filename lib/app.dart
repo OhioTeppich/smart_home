@@ -12,6 +12,10 @@ import 'features/ha_connection/application/ha_connection_state.dart';
 import 'features/ha_connection/domain/value_objects/ha_connection_config.dart';
 import 'features/ha_connection/infrastructure/data_sources/ha_connection_local_data_source.dart';
 import 'features/ha_connection/infrastructure/repositories/ha_connection_repository_impl.dart';
+import 'features/quick_access/application/quick_access_bloc.dart';
+import 'features/quick_access/application/quick_access_event.dart';
+import 'features/quick_access/infrastructure/data_sources/quick_access_local_data_source.dart';
+import 'features/quick_access/infrastructure/repositories/quick_access_repository_impl.dart';
 import 'features/rooms/application/smart_home_bloc.dart';
 import 'features/rooms/application/smart_home_event.dart';
 import 'features/rooms/infrastructure/repositories/home_assistant_smart_home_repository.dart';
@@ -22,11 +26,20 @@ class SmartHomeApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => HaConnectionBloc(
-        HaConnectionRepositoryImpl(HaConnectionLocalDataSource()),
-      )..add(const HaConnectionStarted()),
-      // `SmartHomeBloc` must live above `MaterialApp`, not inside `home:`.
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => HaConnectionBloc(
+            HaConnectionRepositoryImpl(HaConnectionLocalDataSource()),
+          )..add(const HaConnectionStarted()),
+        ),
+        BlocProvider(
+          create: (context) => QuickAccessBloc(
+            QuickAccessRepositoryImpl(QuickAccessLocalDataSource()),
+          )..add(const QuickAccessStarted()),
+        ),
+      ],
+      // Both blocs must live above `MaterialApp`, not inside `home:`.
       // Dialogs opened with `showDialog` and pages pushed with
       // `Navigator.push` become sibling routes on the same root Navigator,
       // not descendants of whatever page opened them — so any provider

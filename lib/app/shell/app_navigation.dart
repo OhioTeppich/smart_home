@@ -80,7 +80,7 @@ class AppNavigationBar extends StatelessWidget {
               const SizedBox(width: 10),
               IconButton(
                 onPressed: onOpenSettings,
-                tooltip: 'Home Assistant-Verbindung',
+                tooltip: 'Einstellungen',
                 icon: const Icon(Icons.settings_outlined),
                 color: AppColors.muted,
               ),
