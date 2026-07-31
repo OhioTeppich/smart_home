@@ -20,16 +20,16 @@ class RoomLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
-      const minimumListWidth = 300.0;
       const gap = 18.0;
-      final sideBySide = constraints.maxWidth >= 1050;
+      final sideBySide = constraints.maxWidth >= 760;
+      final availableWidth = sideBySide
+          ? constraints.maxWidth - gap
+          : constraints.maxWidth;
       final mapCardWidth = sideBySide
-          ? (constraints.maxWidth - minimumListWidth - gap > 900
-                ? 900.0
-                : constraints.maxWidth - minimumListWidth - gap)
+          ? availableWidth * 0.75
           : constraints.maxWidth;
       final listWidth = sideBySide
-          ? constraints.maxWidth - mapCardWidth - gap
+          ? availableWidth * 0.25
           : constraints.maxWidth;
       final cardHeight = (mapCardWidth - 44) / 1.5 + 44;
       final list = SizedBox(
