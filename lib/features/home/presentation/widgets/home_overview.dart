@@ -25,7 +25,7 @@ class HomeOverview extends StatelessWidget {
             SizedBox(width: 14),
             Expanded(child: MarketsCard()),
             SizedBox(width: 14),
-            SizedBox(width: 280, child: SpotifyNowPlayingCard()),
+            SizedBox(width: 320, child: SpotifyNowPlayingCard()),
           ],
         ),
       ),
