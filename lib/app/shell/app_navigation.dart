@@ -64,9 +64,7 @@ class AppNavigationBar extends StatelessWidget {
               _NavItem(
                 icon: Icons.bolt_rounded,
                 label: 'Energie',
-                selected:
-                    section == AppSection.energy ||
-                    section == AppSection.energyAnalysis,
+                selected: section == AppSection.energy,
                 compact: compact,
                 onTap: () => onSectionChanged(AppSection.energy),
               ),

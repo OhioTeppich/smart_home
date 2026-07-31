@@ -19,6 +19,7 @@ import '../../features/rooms/presentation/widgets/room_dialogs.dart';
 import 'app_navigation.dart';
 import 'app_navigation_bloc.dart';
 import 'app_navigation_event.dart';
+import 'app_navigation_state.dart';
 import 'app_section.dart';
 
 class AppShell extends StatelessWidget {
@@ -39,50 +40,112 @@ class _AppShellView extends StatefulWidget {
 }
 
 class _AppShellViewState extends State<_AppShellView> {
+  late final PageController _pageController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(
+      initialPage: context.read<AppNavigationBloc>().state.pageIndex,
+    );
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _syncPageController(int pageIndex) {
+    if (!_pageController.hasClients) return;
+    final current = _pageController.page?.round();
+    if (current == pageIndex) return;
+    _pageController.animateToPage(
+      pageIndex,
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final compact = MediaQuery.sizeOf(context).width < 1100;
     final period = EnergyScope.of(context).period;
     final section = context.watch<AppNavigationBloc>().state.section;
 
-    return Scaffold(
-      body: Stack(
-        children: [
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topRight,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFFDDECEF),
-                  AppColors.canvas,
-                  Color(0xFFF7F9F8),
-                ],
-                stops: [0, .62, 1],
+    return BlocListener<AppNavigationBloc, AppNavigationState>(
+      listenWhen: (previous, current) =>
+          previous.pageIndex != current.pageIndex,
+      listener: (context, state) => _syncPageController(state.pageIndex),
+      child: Scaffold(
+        body: Stack(
+          children: [
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topRight,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFFDDECEF),
+                    AppColors.canvas,
+                    Color(0xFFF7F9F8),
+                  ],
+                  stops: [0, .62, 1],
+                ),
+              ),
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 96, bottom: 16),
+                  child: PageView(
+                    controller: _pageController,
+                    onPageChanged: (index) => context
+                        .read<AppNavigationBloc>()
+                        .add(AppNavigationSwiped(index)),
+                    children: [
+                      const home.HomePage(),
+                      _EnergySection(compact: compact, period: period),
+                      const RoomPage(),
+                      const RoomPage(
+                        roomId: 'bedroom',
+                        roomName: 'Schlafzimmer',
+                        imageAsset: null,
+                      ),
+                      const RoomPage(
+                        roomId: 'kitchen',
+                        roomName: 'Küche',
+                        imageAsset: null,
+                      ),
+                      const RoomPage(
+                        roomId: 'bathroom',
+                        roomName: 'Bad',
+                        imageAsset: null,
+                      ),
+                      const RoomPage(
+                        roomId: 'hallway',
+                        roomName: 'Flur',
+                        imageAsset: null,
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
-            child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 96, bottom: 16),
-                child: _buildPage(section, compact, period),
+            Positioned(
+              top: 16,
+              left: compact ? 16 : 34,
+              right: compact ? 16 : 34,
+              child: AppNavigationBar(
+                section: section,
+                compact: compact,
+                onSectionChanged: (value) => context
+                    .read<AppNavigationBloc>()
+                    .add(AppNavigationSectionSelected(value)),
+                trailing: _buildNavigationTrailing(section, period, compact),
+                onOpenSettings: _openHaConnectionSettings,
               ),
             ),
-          ),
-          Positioned(
-            top: 16,
-            left: compact ? 16 : 34,
-            right: compact ? 16 : 34,
-            child: AppNavigationBar(
-              section: section,
-              compact: compact,
-              onSectionChanged: (value) => context
-                  .read<AppNavigationBloc>()
-                  .add(AppNavigationSectionSelected(value)),
-              trailing: _buildNavigationTrailing(section, period, compact),
-              onOpenSettings: _openHaConnectionSettings,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -98,7 +161,7 @@ class _AppShellViewState extends State<_AppShellView> {
         onPressed: () => _addDeviceToCurrentRoom(section),
       );
     }
-    if (section == AppSection.energy || section == AppSection.energyAnalysis) {
+    if (section == AppSection.energy) {
       return EnergyPeriodSelector(
         value: period,
         onChanged: EnergyScope.of(context).selectPeriod,
@@ -109,42 +172,6 @@ class _AppShellViewState extends State<_AppShellView> {
     }
     return null;
   }
-
-  Widget _buildPage(AppSection section, bool compact, Period period) =>
-      switch (section) {
-        AppSection.home => const home.HomePage(),
-        AppSection.energy => energyOverview.OverviewPage(
-          compact: compact,
-          period: period,
-          onDetails: () => context.read<AppNavigationBloc>().add(
-            const AppNavigationSectionSelected(AppSection.energyAnalysis),
-          ),
-        ),
-        AppSection.energyAnalysis => energyAnalysis.AnalysisPage(
-          period: period,
-        ),
-        AppSection.livingRoom => const RoomPage(),
-        AppSection.bedroom => const RoomPage(
-          roomId: 'bedroom',
-          roomName: 'Schlafzimmer',
-          imageAsset: null,
-        ),
-        AppSection.kitchen => const RoomPage(
-          roomId: 'kitchen',
-          roomName: 'Küche',
-          imageAsset: null,
-        ),
-        AppSection.bathroom => const RoomPage(
-          roomId: 'bathroom',
-          roomName: 'Bad',
-          imageAsset: null,
-        ),
-        AppSection.hallway => const RoomPage(
-          roomId: 'hallway',
-          roomName: 'Flur',
-          imageAsset: null,
-        ),
-      };
 
   void _openHaConnectionSettings() {
     Navigator.of(context).push<void>(
@@ -173,6 +200,59 @@ class _AppShellViewState extends State<_AppShellView> {
     AppSection.hallway => 'hallway',
     _ => 'livingRoom',
   };
+}
+
+/// Hosts the Energie overview and its Analysis drill-down as an inner,
+/// programmatically-driven horizontal PageView. Kept local to this widget
+/// (not the AppNavigationBloc) since it's ephemeral UI state for a single
+/// section, not global navigation.
+class _EnergySection extends StatefulWidget {
+  const _EnergySection({required this.compact, required this.period});
+
+  final bool compact;
+  final Period period;
+
+  @override
+  State<_EnergySection> createState() => _EnergySectionState();
+}
+
+class _EnergySectionState extends State<_EnergySection> {
+  final _controller = PageController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _openAnalysis() => _controller.animateToPage(
+    1,
+    duration: const Duration(milliseconds: 320),
+    curve: Curves.easeOutCubic,
+  );
+
+  void _backToOverview() => _controller.animateToPage(
+    0,
+    duration: const Duration(milliseconds: 320),
+    curve: Curves.easeOutCubic,
+  );
+
+  @override
+  Widget build(BuildContext context) => PageView(
+    controller: _controller,
+    physics: const NeverScrollableScrollPhysics(),
+    children: [
+      energyOverview.OverviewPage(
+        compact: widget.compact,
+        period: widget.period,
+        onDetails: _openAnalysis,
+      ),
+      energyAnalysis.AnalysisPage(
+        period: widget.period,
+        onBack: _backToOverview,
+      ),
+    ],
+  );
 }
 
 class _LiveClock extends StatefulWidget {

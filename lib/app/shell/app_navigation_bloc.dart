@@ -9,5 +9,9 @@ class AppNavigationBloc extends Bloc<AppNavigationEvent, AppNavigationState> {
     on<AppNavigationSectionSelected>(
       (event, emit) => emit(AppNavigationState(event.section)),
     );
+    on<AppNavigationSwiped>(
+      (event, emit) =>
+          emit(AppNavigationState(kTopLevelSections[event.pageIndex])),
+    );
   }
 }

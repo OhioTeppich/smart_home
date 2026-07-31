@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_theme.dart';
 import '../../domain/entities/energy_point.dart';
 import '../widgets/energy_chart_widgets.dart';
 import '../widgets/energy_metric_widgets.dart';
 import '../widgets/energy_summary_widgets.dart';
 
 class AnalysisPage extends StatelessWidget {
-  const AnalysisPage({required this.period, super.key});
+  const AnalysisPage({required this.period, this.onBack, super.key});
   final Period period;
+  final VoidCallback? onBack;
 
   @override
   Widget build(BuildContext context) => SingleChildScrollView(
@@ -15,6 +17,34 @@ class AnalysisPage extends StatelessWidget {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (onBack != null) ...[
+          InkWell(
+            onTap: onBack,
+            borderRadius: BorderRadius.circular(8),
+            child: const Padding(
+              padding: EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.arrow_back_rounded,
+                    size: 18,
+                    color: AppColors.blueDark,
+                  ),
+                  SizedBox(width: 6),
+                  Text(
+                    'Übersicht',
+                    style: TextStyle(
+                      color: AppColors.blueDark,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 18),
+        ],
         LayoutBuilder(
           builder: (context, constraints) {
             final stacked = constraints.maxWidth < 780;

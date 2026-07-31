@@ -17,3 +17,12 @@ class AppNavigationSectionSelected extends AppNavigationEvent {
   @override
   List<Object?> get props => [section];
 }
+
+class AppNavigationSwiped extends AppNavigationEvent {
+  const AppNavigationSwiped(this.pageIndex);
+
+  final int pageIndex;
+
+  @override
+  List<Object?> get props => [pageIndex];
+}

@@ -7,6 +7,8 @@ class AppNavigationState extends Equatable {
 
   final AppSection section;
 
+  int get pageIndex => kTopLevelSections.indexOf(section);
+
   @override
   List<Object?> get props => [section];
 }
