@@ -66,14 +66,30 @@ class HomeAssistantSmartHomeRepository implements SmartHomeRepository {
   /// Assistant's own convention for "not a primary device the user cares
   /// about" (e.g. `sensor.backup_last_successful_backup`,
   /// `update.home_assistant_core`). Cached for the repository's lifetime;
-  /// left `null` (and re-fetched next call) if the registry lookup fails,
-  /// so a transient error only skips this extra filter instead of hard
-  /// failing the whole device list.
+  /// left `null` if the registry lookup fails, so a transient error only
+  /// skips this extra filter instead of hard failing the whole device list.
+  /// Retried at most once per [_diagnosticEntityIdsRetryCooldown] — without
+  /// this, a single failure would otherwise be retried on every incoming
+  /// `state_changed` event, each opening a fresh WebSocket connect + auth
+  /// handshake.
   Set<String>? _diagnosticEntityIdsCache;
+
+  /// When the last registry fetch failed, holds the time of that failure so
+  /// [_diagnosticEntityIds] can wait out [_diagnosticEntityIdsRetryCooldown]
+  /// instead of re-opening a full WebSocket connect + auth handshake on
+  /// every single incoming `state_changed` event.
+  DateTime? _diagnosticEntityIdsFailedAt;
+
+  static const _diagnosticEntityIdsRetryCooldown = Duration(seconds: 60);
 
   Future<Set<String>> _diagnosticEntityIds(HaConnectionConfig config) async {
     final cached = _diagnosticEntityIdsCache;
     if (cached != null) return cached;
+    final failedAt = _diagnosticEntityIdsFailedAt;
+    if (failedAt != null &&
+        DateTime.now().difference(failedAt) < _diagnosticEntityIdsRetryCooldown) {
+      return const {};
+    }
     try {
       final entries = await _webSocketClient.fetchEntityRegistry(
         baseUrl: config.baseUrl,
@@ -88,8 +104,10 @@ class HomeAssistantSmartHomeRepository implements SmartHomeRepository {
           .map((entry) => entry['entity_id'] as String)
           .toSet();
       _diagnosticEntityIdsCache = ids;
+      _diagnosticEntityIdsFailedAt = null;
       return ids;
     } catch (_) {
+      _diagnosticEntityIdsFailedAt = DateTime.now();
       return const {};
     }
   }
