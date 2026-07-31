@@ -25,10 +25,26 @@ class HaDeviceOverlay {
 class HaDeviceOverlayLocalDataSource {
   static const _prefsKey = 'ha_device_overlay';
 
+  /// Loaded lazily on first [readAll]/[_update] call, then kept for this
+  /// instance's lifetime — the repository calls [readAll] on every
+  /// `state_changed` websocket event, so without this cache every live HA
+  /// update would re-read and re-decode the whole overlay blob from
+  /// `SharedPreferences`, even though it only ever changes via explicit
+  /// user actions (toggle/assign/place/remove) that already go through
+  /// [_update] and keep this same map in sync.
+  Map<String, HaDeviceOverlay>? _cache;
+
   Future<Map<String, HaDeviceOverlay>> readAll() async {
+    final cached = _cache;
+    if (cached != null) return cached;
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_prefsKey);
-    if (raw == null) return {};
+    final loaded = raw == null ? <String, HaDeviceOverlay>{} : _decode(raw);
+    _cache = loaded;
+    return loaded;
+  }
+
+  Map<String, HaDeviceOverlay> _decode(String raw) {
     final decoded = jsonDecode(raw) as Map<String, dynamic>;
     return decoded.map((entityId, value) {
       final entry = (value as Map).cast<String, dynamic>();
