@@ -12,16 +12,22 @@ class EnergyPriceSettingsPage extends StatefulWidget {
 }
 
 class _EnergyPriceSettingsPageState extends State<EnergyPriceSettingsPage> {
-  late final TextEditingController _priceController;
+  final _priceController = TextEditingController();
+  bool _prefilled = false;
   String? _error;
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // `EnergyScope.of` registers an InheritedWidget dependency, which is
+    // only allowed from didChangeDependencies onward, not initState — so
+    // the one-time prefill from the current price happens here instead.
+    if (_prefilled) return;
+    _prefilled = true;
     final price = EnergyScope.of(context).pricePerKwh;
-    _priceController = TextEditingController(
-      text: price == null ? '' : price.toString().replaceAll('.', ','),
-    );
+    if (price != null) {
+      _priceController.text = price.toString().replaceAll('.', ',');
+    }
   }
 
   @override
