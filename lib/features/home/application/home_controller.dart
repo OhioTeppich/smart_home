@@ -21,16 +21,13 @@ class HomeController extends ChangeNotifier {
   WeatherLocation? selectedLocation;
   bool loadingWeather = false;
   Timer? _weatherTimer;
+  Timer? _marketTimer;
   StreamSubscription? _marketSubscription;
   final markets = MarketSymbol.values;
 
   Future<void> start() async {
     await refreshWeather();
-    final quotes = await Future.wait(markets.map(_market.initial));
-    for (final quote in quotes) {
-      marketQuotes[quote.symbol] = quote;
-    }
-    notifyListeners();
+    await refreshMarkets();
     _marketSubscription = _market.live(MarketSymbol.btc).listen((quote) {
       marketQuotes[quote.symbol] = quote;
       notifyListeners();
@@ -39,6 +36,18 @@ class HomeController extends ChangeNotifier {
       const Duration(minutes: 5),
       (_) => refreshWeather(),
     );
+    _marketTimer = Timer.periodic(
+      const Duration(minutes: 1),
+      (_) => refreshMarkets(),
+    );
+  }
+
+  Future<void> refreshMarkets() async {
+    final quotes = await Future.wait(markets.map(_market.initial));
+    for (final quote in quotes) {
+      marketQuotes[quote.symbol] = quote;
+    }
+    notifyListeners();
   }
 
   Future<void> refreshWeather() async {
@@ -80,6 +89,7 @@ class HomeController extends ChangeNotifier {
   @override
   void dispose() {
     _weatherTimer?.cancel();
+    _marketTimer?.cancel();
     _marketSubscription?.cancel();
     _market.dispose();
     super.dispose();
