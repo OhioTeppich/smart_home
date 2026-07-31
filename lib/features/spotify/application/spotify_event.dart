@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 
+import '../domain/entities/spotify_playback_command.dart';
+
 sealed class SpotifyEvent extends Equatable {
   const SpotifyEvent();
 
@@ -35,4 +37,13 @@ class SpotifyLogoutRequested extends SpotifyEvent {
 /// Internal event added by the polling [Timer] while authenticated.
 class SpotifyPollTicked extends SpotifyEvent {
   const SpotifyPollTicked();
+}
+
+class SpotifyPlaybackCommandRequested extends SpotifyEvent {
+  const SpotifyPlaybackCommandRequested(this.command);
+
+  final SpotifyPlaybackCommand command;
+
+  @override
+  List<Object?> get props => [command];
 }

@@ -15,6 +15,7 @@ class SpotifyBloc extends Bloc<SpotifyEvent, SpotifyState> {
     on<SpotifyLoginRequested>(_onLoginRequested);
     on<SpotifyLogoutRequested>(_onLogoutRequested);
     on<SpotifyPollTicked>(_onPollTicked);
+    on<SpotifyPlaybackCommandRequested>(_onPlaybackCommandRequested);
   }
 
   final SpotifyRepository _repository;
@@ -102,6 +103,34 @@ class SpotifyBloc extends Bloc<SpotifyEvent, SpotifyState> {
       // recover, don't force the user to log in again.
       emit(SpotifyError(authConfig: state.authConfig, error: failure));
     }
+  }
+
+  Future<void> _onPlaybackCommandRequested(
+    SpotifyPlaybackCommandRequested event,
+    Emitter<SpotifyState> emit,
+  ) async {
+    final current = state;
+    try {
+      await _repository.sendPlaybackCommand(event.command);
+    } on SpotifyUnauthenticatedFailure {
+      _pollTimer?.cancel();
+      emit(SpotifyUnauthenticated(authConfig: state.authConfig));
+      return;
+    } on SpotifyFailure catch (failure) {
+      if (current is SpotifyPlaying) {
+        emit(
+          SpotifyPlaying(
+            authConfig: current.authConfig,
+            nowPlaying: current.nowPlaying,
+            commandError: failure,
+          ),
+        );
+      }
+    }
+    // Give Spotify a moment to apply the command before re-polling, instead
+    // of waiting for the next scheduled tick (up to 8s away).
+    await Future.delayed(const Duration(milliseconds: 400));
+    add(const SpotifyPollTicked());
   }
 
   void _startPolling() {

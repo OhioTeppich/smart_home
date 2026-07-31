@@ -3,6 +3,7 @@ import 'package:smart_home/features/spotify/application/spotify_bloc.dart';
 import 'package:smart_home/features/spotify/application/spotify_event.dart';
 import 'package:smart_home/features/spotify/application/spotify_state.dart';
 import 'package:smart_home/features/spotify/domain/entities/spotify_now_playing.dart';
+import 'package:smart_home/features/spotify/domain/entities/spotify_playback_command.dart';
 import 'package:smart_home/features/spotify/domain/failures/spotify_failure.dart';
 import 'package:smart_home/features/spotify/domain/repositories/spotify_repository.dart';
 import 'package:smart_home/features/spotify/domain/value_objects/spotify_auth_config.dart';
@@ -24,8 +25,10 @@ class _FakeSpotifyRepository implements SpotifyRepository {
   bool authenticated = false;
   Object? loginError;
   Object? fetchError;
+  Object? commandError;
   SpotifyNowPlaying? nowPlaying;
   final calls = <String>[];
+  final commands = <SpotifyPlaybackCommand>[];
 
   @override
   Future<SpotifyAuthConfig?> loadAuthConfig() async => config;
@@ -57,6 +60,12 @@ class _FakeSpotifyRepository implements SpotifyRepository {
     calls.add('fetchCurrentlyPlaying');
     if (fetchError != null) throw fetchError!;
     return nowPlaying;
+  }
+
+  @override
+  Future<void> sendPlaybackCommand(SpotifyPlaybackCommand command) async {
+    commands.add(command);
+    if (commandError != null) throw commandError!;
   }
 }
 
@@ -203,5 +212,59 @@ void main() {
     await Future.delayed(Duration.zero);
 
     expect(bloc.state, isA<SpotifyPlaying>());
+  });
+
+  test('SpotifyPlaybackCommandRequested sends the command and re-polls shortly after', () async {
+    repository.authenticated = true;
+    repository.nowPlaying = _track(isPlaying: false);
+    bloc = SpotifyBloc(repository);
+    bloc.add(const SpotifyStarted());
+    await Future.delayed(Duration.zero);
+
+    repository.nowPlaying = _track(isPlaying: true);
+    bloc.add(
+      const SpotifyPlaybackCommandRequested(SpotifyPlaybackCommand.play),
+    );
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    expect(repository.commands, [SpotifyPlaybackCommand.play]);
+    expect((bloc.state as SpotifyPlaying).nowPlaying.isPlaying, isTrue);
+  });
+
+  test('a failing command surfaces commandError but keeps showing the track', () async {
+    repository.authenticated = true;
+    repository.nowPlaying = _track();
+    bloc = SpotifyBloc(repository);
+    bloc.add(const SpotifyStarted());
+    await Future.delayed(Duration.zero);
+
+    repository.commandError = const SpotifyNoActiveDeviceFailure();
+    bloc.add(
+      const SpotifyPlaybackCommandRequested(SpotifyPlaybackCommand.pause),
+    );
+    await Future.delayed(Duration.zero);
+
+    final state = bloc.state as SpotifyPlaying;
+    expect(state.commandError, isA<SpotifyNoActiveDeviceFailure>());
+    expect(state.nowPlaying, _track());
+
+    await Future.delayed(const Duration(milliseconds: 500));
+    expect(bloc.state, isA<SpotifyPlaying>());
+  });
+
+  test('a command failing with SpotifyUnauthenticatedFailure forces re-login', () async {
+    repository.authenticated = true;
+    repository.nowPlaying = _track();
+    bloc = SpotifyBloc(repository);
+    bloc.add(const SpotifyStarted());
+    await Future.delayed(Duration.zero);
+
+    repository.commandError = const SpotifyUnauthenticatedFailure();
+    bloc.add(
+      const SpotifyPlaybackCommandRequested(SpotifyPlaybackCommand.skipNext),
+    );
+    await Future.delayed(Duration.zero);
+
+    expect(bloc.state, isA<SpotifyUnauthenticated>());
   });
 }

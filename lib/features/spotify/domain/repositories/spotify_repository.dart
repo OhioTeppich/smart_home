@@ -1,4 +1,5 @@
 import '../entities/spotify_now_playing.dart';
+import '../entities/spotify_playback_command.dart';
 import '../value_objects/spotify_auth_config.dart';
 
 abstract class SpotifyRepository {
@@ -21,4 +22,8 @@ abstract class SpotifyRepository {
   /// Returns `null` when nothing is currently playing (not a failure).
   /// Throws a [SpotifyFailure] subtype on auth/network errors.
   Future<SpotifyNowPlaying?> fetchCurrentlyPlaying();
+
+  /// Throws a [SpotifyFailure] subtype (e.g. no active device, Premium
+  /// required) on failure. Returns normally on success.
+  Future<void> sendPlaybackCommand(SpotifyPlaybackCommand command);
 }

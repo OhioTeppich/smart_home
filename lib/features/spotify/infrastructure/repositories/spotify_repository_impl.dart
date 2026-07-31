@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import '../../domain/entities/spotify_now_playing.dart';
+import '../../domain/entities/spotify_playback_command.dart';
 import '../../domain/failures/spotify_failure.dart';
 import '../../domain/repositories/spotify_repository.dart';
 import '../../domain/value_objects/spotify_auth_config.dart';
@@ -83,6 +84,18 @@ class SpotifyRepositoryImpl implements SpotifyRepository {
       return dto?.toDomain();
     }
   });
+
+  @override
+  Future<void> sendPlaybackCommand(SpotifyPlaybackCommand command) =>
+      _guard(() async {
+        final token = await _validAccessToken();
+        try {
+          await _remoteDataSource.sendPlaybackCommand(token, command);
+        } on SpotifyUnauthenticatedFailure {
+          final refreshed = await _validAccessToken(force: true);
+          await _remoteDataSource.sendPlaybackCommand(refreshed, command);
+        }
+      });
 
   Future<String> _validAccessToken({bool force = false}) async {
     if (!force &&

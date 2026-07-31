@@ -24,6 +24,16 @@ class SpotifyInvalidConfigFailure extends SpotifyFailure {
     : super('Client-ID oder Redirect-URI sind ungültig.');
 }
 
+class SpotifyNoActiveDeviceFailure extends SpotifyFailure {
+  const SpotifyNoActiveDeviceFailure()
+    : super('Kein aktives Wiedergabegerät gefunden.');
+}
+
+class SpotifyPremiumRequiredFailure extends SpotifyFailure {
+  const SpotifyPremiumRequiredFailure()
+    : super('Steuerung erfordert Spotify Premium.');
+}
+
 class SpotifyUnexpectedFailure extends SpotifyFailure {
   const SpotifyUnexpectedFailure(super.message);
 }

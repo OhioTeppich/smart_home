@@ -37,12 +37,20 @@ class SpotifyIdle extends SpotifyState {
 }
 
 class SpotifyPlaying extends SpotifyState {
-  const SpotifyPlaying({required super.authConfig, required this.nowPlaying});
+  const SpotifyPlaying({
+    required super.authConfig,
+    required this.nowPlaying,
+    this.commandError,
+  });
 
   final SpotifyNowPlaying nowPlaying;
 
+  /// Set briefly after a failed play/pause/skip command (e.g. no active
+  /// device, Premium required); cleared again once the next poll succeeds.
+  final SpotifyFailure? commandError;
+
   @override
-  List<Object?> get props => [authConfig, nowPlaying];
+  List<Object?> get props => [authConfig, nowPlaying, commandError];
 }
 
 class SpotifyError extends SpotifyState {
