@@ -1,3 +1,4 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -24,6 +25,25 @@ import 'quick_access_toggle_tile.dart';
 const kQuickAccessTileWidth = 160.0;
 const kQuickAccessTileGap = 12.0;
 
+/// What `QuickAccessCard` actually needs out of `SmartHomeBloc`'s state,
+/// derived once per emission and compared by value — narrows the widget's
+/// effective rebuild trigger from "any device anywhere changed" down to
+/// "one of the pinned devices changed" (via `context.select`).
+class _PinnedDevicesSnapshot extends Equatable {
+  const _PinnedDevicesSnapshot({
+    required this.resolved,
+    required this.staleIds,
+    required this.hasLoaded,
+  });
+
+  final List<SmartHomeDevice> resolved;
+  final List<String> staleIds;
+  final bool hasLoaded;
+
+  @override
+  List<Object?> get props => [resolved, staleIds, hasLoaded];
+}
+
 /// Renders each Schnellzugriff device as its own standalone tile — no
 /// shared surrounding card, no title. Just the tiles, side by side.
 class QuickAccessCard extends StatelessWidget {
@@ -31,29 +51,38 @@ class QuickAccessCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final quickAccessState = context.watch<QuickAccessBloc>().state;
-    final smartHomeState = context.watch<SmartHomeBloc>().state;
-    final ids = quickAccessState is QuickAccessReady
-        ? quickAccessState.deviceIds
-        : const <String>[];
-    final allDevices = smartHomeState is SmartHomeConnected
-        ? smartHomeState.devices
-        : const <SmartHomeDevice>[];
-    final devicesById = {for (final device in allDevices) device.id: device};
-    final resolved = [
-      for (final id in ids)
-        if (devicesById[id] case final device?) device,
-    ];
+    final ids = context.select<QuickAccessBloc, List<String>>((bloc) {
+      final state = bloc.state;
+      return state is QuickAccessReady ? state.deviceIds : const <String>[];
+    });
+
+    final snapshot = context.select<SmartHomeBloc, _PinnedDevicesSnapshot>((
+      bloc,
+    ) {
+      final state = bloc.state;
+      final allDevices = state is SmartHomeConnected
+          ? state.devices
+          : const <SmartHomeDevice>[];
+      final devicesById = {for (final device in allDevices) device.id: device};
+      return _PinnedDevicesSnapshot(
+        resolved: [
+          for (final id in ids)
+            if (devicesById[id] case final device?) device,
+        ],
+        staleIds: [for (final id in ids) if (!devicesById.containsKey(id)) id],
+        hasLoaded: allDevices.isNotEmpty,
+      );
+    });
+    final resolved = snapshot.resolved;
 
     // Storage may reference a device no longer known to Home Assistant
     // (removed/renamed). Only prune once we actually have a current,
     // non-empty device list — never while HA hasn't loaded yet, otherwise
     // a cold start with an empty stream would wipe the user's whole list.
-    if (allDevices.isNotEmpty && resolved.length != ids.length) {
-      final staleIds = ids.where((id) => !devicesById.containsKey(id));
+    if (snapshot.hasLoaded && resolved.length != ids.length) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!context.mounted) return;
-        for (final staleId in staleIds) {
+        for (final staleId in snapshot.staleIds) {
           context.read<QuickAccessBloc>().add(QuickAccessDeviceRemoved(staleId));
         }
       });
