@@ -197,18 +197,20 @@ class _DeviceInfoDialogState extends State<DeviceInfoDialog> {
         children: [
           InfoRow(label: 'Gerätetyp', value: widget.device.type.label),
           InfoRow(label: 'Verbindung', value: widget.device.status),
-          InfoRow(
-            label: 'Aktuelle Leistung',
-            value:
-                '${isOn ? widget.device.powerWatts.toStringAsFixed(0) : '0'} W',
-          ),
-          InfoRow(
-            label: widget.device.dailyKwhIsCumulative
-                ? 'Zählerstand gesamt'
-                : 'Verbrauch heute',
-            value:
-                '${widget.device.dailyKwh.toStringAsFixed(2).replaceAll('.', ',')} kWh',
-          ),
+          if (widget.device.hasEnergyData) ...[
+            InfoRow(
+              label: 'Aktuelle Leistung',
+              value:
+                  '${isOn ? widget.device.powerWatts.toStringAsFixed(0) : '0'} W',
+            ),
+            InfoRow(
+              label: widget.device.dailyKwhIsCumulative
+                  ? 'Zählerstand gesamt'
+                  : 'Verbrauch heute',
+              value:
+                  '${widget.device.dailyKwh.toStringAsFixed(2).replaceAll('.', ',')} kWh',
+            ),
+          ],
           InfoRow(
             label: 'Letzte Aktualisierung',
             value: isOn == widget.device.isOn

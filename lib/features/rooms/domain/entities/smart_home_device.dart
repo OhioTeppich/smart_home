@@ -94,6 +94,12 @@ class SmartHomeDevice extends Equatable {
     SmartHomeDeviceType.other => false,
   };
 
+  /// `false` when Home Assistant reports no power/energy attributes for
+  /// this entity (and no companion power/energy `sensor.*` either) — e.g. a
+  /// plain switch or a TV without power monitoring. Data-driven rather than
+  /// type-driven, since even a `plug` may lack a Shelly-style power sensor.
+  bool get hasEnergyData => powerWatts > 0 || dailyKwh > 0;
+
   SmartHomeDevice copyWith({
     String? roomId,
     bool clearRoomId = false,
