@@ -58,7 +58,7 @@ class QuickAccessCoverTile extends StatelessWidget {
           maxLines: 1,
           style: const TextStyle(color: AppColors.muted, fontSize: 12),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -117,15 +117,15 @@ class _MiniCoverButton extends StatelessWidget {
   Widget build(BuildContext context) => Tooltip(
     message: tooltip,
     child: SizedBox(
-      width: 40,
-      height: 40,
+      width: 36,
+      height: 36,
       child: Material(
         color: AppColors.line.withOpacity(.7),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(11),
         child: InkWell(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(11),
           onTap: onTap,
-          child: Icon(icon, size: 22, color: AppColors.ink),
+          child: Icon(icon, size: 20, color: AppColors.ink),
         ),
       ),
     ),
