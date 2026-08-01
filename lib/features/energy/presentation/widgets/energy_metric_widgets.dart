@@ -137,6 +137,8 @@ class DeviceUsageCard extends StatelessWidget {
           const SizedBox(height: 18),
           Text(
             device.name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 8),
@@ -243,6 +245,8 @@ class DeviceUsageListItem extends StatelessWidget {
             children: [
               Text(
                 device.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: 13,
