@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -44,13 +45,7 @@ class AppNavigationBar extends StatelessWidget {
           ),
           child: Row(
             children: [
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 14),
-                child: Text(
-                  '30. Juli 2026',
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
-                ),
-              ),
+              const _CurrentDateLabel(),
               Container(width: 1, height: 34, color: AppColors.line),
               const SizedBox(width: 14),
               _NavItem(
@@ -90,6 +85,61 @@ class AppNavigationBar extends StatelessWidget {
       ),
     );
   }
+}
+
+const _germanMonths = [
+  'Januar',
+  'Februar',
+  'März',
+  'April',
+  'Mai',
+  'Juni',
+  'Juli',
+  'August',
+  'September',
+  'Oktober',
+  'November',
+  'Dezember',
+];
+
+class _CurrentDateLabel extends StatefulWidget {
+  const _CurrentDateLabel();
+
+  @override
+  State<_CurrentDateLabel> createState() => _CurrentDateLabelState();
+}
+
+class _CurrentDateLabelState extends State<_CurrentDateLabel> {
+  late Timer _timer;
+  DateTime _today = DateTime.now();
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(minutes: 1), (_) {
+      final now = DateTime.now();
+      if (now.day != _today.day ||
+          now.month != _today.month ||
+          now.year != _today.year) {
+        setState(() => _today = now);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 14),
+    child: Text(
+      '${_today.day}. ${_germanMonths[_today.month - 1]} ${_today.year}',
+      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+    ),
+  );
 }
 
 class _NavItem extends StatelessWidget {
