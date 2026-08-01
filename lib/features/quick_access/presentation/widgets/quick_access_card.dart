@@ -105,8 +105,9 @@ class QuickAccessCard extends StatelessWidget {
   }
 }
 
-/// Lays [devices] out as a 2-column grid (two rows of two), padding an odd
-/// trailing slot with an empty cell so the grid stays balanced.
+/// Lays [devices] out as a fixed 2x2 grid, padding unused slots with an
+/// empty cell so every tile keeps the same size no matter how many devices
+/// (1-4) are actually pinned.
 class _QuickAccessGrid extends StatelessWidget {
   const _QuickAccessGrid({required this.devices});
 
@@ -114,9 +115,12 @@ class _QuickAccessGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final padded = [
+      for (var i = 0; i < 4; i++) i < devices.length ? devices[i] : null,
+    ];
     final rows = <List<SmartHomeDevice?>>[
-      for (var i = 0; i < devices.length; i += 2)
-        [devices[i], i + 1 < devices.length ? devices[i + 1] : null],
+      [padded[0], padded[1]],
+      [padded[2], padded[3]],
     ];
     return Column(
       children: [
