@@ -96,15 +96,32 @@ class Track17ParcelRepository implements ParcelRepository {
     final now = DateTime.now();
 
     final carrierCode = carrier.track17Code;
+    var initialStatus = ParcelStatus.unknown;
     if (carrierCode != null) {
       await _remoteDataSource.register(carrierCode, trimmedNumber);
+      try {
+        // Registration alone can leave the parcel showing "Unbekannt" for
+        // up to `_pollInterval` until the next background poll — try once
+        // immediately so an already-in-transit parcel shows its real status
+        // right away instead of waiting.
+        final statuses = await _remoteDataSource.fetchStatuses([
+          (carrierCode: carrierCode, trackingNumber: trimmedNumber),
+        ]);
+        if (statuses.isNotEmpty) {
+          initialStatus = statuses.first.toParcelStatus();
+        }
+      } catch (_) {
+        // Registration already succeeded; a failed immediate status fetch
+        // just means this parcel starts at `unknown` and catches up on the
+        // next poll instead of failing the whole add.
+      }
     }
 
     _byId[id] = Parcel(
       id: id,
       carrier: carrier,
       trackingNumber: trimmedNumber,
-      status: ParcelStatus.unknown,
+      status: initialStatus,
       lastUpdate: now,
       addedAt: now,
       description: (trimmedDescription == null || trimmedDescription.isEmpty)

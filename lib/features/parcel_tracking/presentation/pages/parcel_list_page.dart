@@ -8,8 +8,22 @@ import '../../application/parcel_tracking_state.dart';
 import '../widgets/parcel_list_tile.dart';
 import 'parcel_add_page.dart';
 
-class ParcelListPage extends StatelessWidget {
+class ParcelListPage extends StatefulWidget {
   const ParcelListPage({super.key});
+
+  @override
+  State<ParcelListPage> createState() => _ParcelListPageState();
+}
+
+class _ParcelListPageState extends State<ParcelListPage> {
+  @override
+  void initState() {
+    super.initState();
+    // Opening the list is also a natural point to catch up on status —
+    // otherwise a parcel added between two 10-minute polls would show
+    // "Unbekannt" here until the next background poll fires.
+    context.read<ParcelTrackingBloc>().add(const ParcelTrackingRefreshAllRequested());
+  }
 
   @override
   Widget build(BuildContext context) => Scaffold(
