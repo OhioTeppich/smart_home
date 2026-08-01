@@ -43,6 +43,28 @@ class _WeatherCardState extends State<WeatherCard> {
     super.dispose();
   }
 
+  static const double _hourItemExtent = 58.0;
+
+  bool _onScrollEnd(ScrollNotification notification, int itemCount) {
+    if (notification is! ScrollEndNotification ||
+        !_hourlyController.hasClients ||
+        itemCount == 0) {
+      return false;
+    }
+    final maxExtent = _hourlyController.position.maxScrollExtent;
+    final offset = _hourlyController.offset;
+    final index = (offset / _hourItemExtent).round().clamp(0, itemCount - 1);
+    final target = (index * _hourItemExtent).clamp(0.0, maxExtent);
+    if ((target - offset).abs() > 0.5) {
+      _hourlyController.animateTo(
+        target,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+      );
+    }
+    return false;
+  }
+
   void _centerCurrentHour(WeatherSnapshot weather) {
     if (_centeredWeather == weather.updatedAt.toIso8601String() ||
         weather.hourly.isEmpty) {
@@ -198,79 +220,87 @@ class _WeatherCardState extends State<WeatherCard> {
                       );
                 return SizedBox(
                   height: 68,
-                  child: ListView.builder(
-                    controller: _hourlyController,
-                    scrollDirection: Axis.horizontal,
-                    physics: const BouncingScrollPhysics(),
-                    padding: EdgeInsets.symmetric(
-                      horizontal: (constraints.maxWidth / 2 - 29).clamp(
-                        0.0,
-                        double.infinity,
+                  child: NotificationListener<ScrollNotification>(
+                    onNotification: (notification) =>
+                        _onScrollEnd(notification, weather.hourly.length),
+                    child: ListView.builder(
+                      controller: _hourlyController,
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: (constraints.maxWidth / 2 - 29).clamp(
+                          0.0,
+                          double.infinity,
+                        ),
                       ),
-                    ),
-                    itemCount: weather.hourly.length,
-                    itemBuilder: (_, i) {
-                      final point = weather.hourly[i];
-                      final current = i == currentIndex;
-                      return SizedBox(
-                        width: 58,
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 180),
-                          margin: const EdgeInsets.symmetric(horizontal: 2),
-                          padding: const EdgeInsets.symmetric(vertical: 3),
-                          decoration: BoxDecoration(
-                            color: current
-                                ? AppColors.blue.withOpacity(.18)
-                                : Colors.transparent,
-                            borderRadius: BorderRadius.circular(12),
-                            border: current
-                                ? Border.all(
-                                    color: AppColors.blueDark.withOpacity(.55),
-                                    width: 1.5,
-                                  )
-                                : null,
-                          ),
-                          child: Column(
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
+                      itemCount: weather.hourly.length,
+                      itemBuilder: (_, i) {
+                        final point = weather.hourly[i];
+                        final current = i == currentIndex;
+                        return SizedBox(
+                          width: 58,
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 180),
+                            margin: const EdgeInsets.symmetric(horizontal: 2),
+                            padding: const EdgeInsets.symmetric(vertical: 3),
+                            decoration: BoxDecoration(
+                              color: current
+                                  ? AppColors.blue.withOpacity(.18)
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(12),
+                              border: current
+                                  ? Border.all(
+                                      color: AppColors.blueDark.withOpacity(
+                                        .55,
+                                      ),
+                                      width: 1.5,
+                                    )
+                                  : null,
+                            ),
+                            child: Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      current
+                                          ? 'JETZT'
+                                          : '${point.time.hour}:00',
+                                      style: TextStyle(
+                                        fontSize: current ? 9 : 10,
+                                        fontWeight: FontWeight.w900,
+                                        color: current
+                                            ? AppColors.blueDark
+                                            : AppColors.muted,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '${point.temperature.round()}°',
+                                  style: TextStyle(
+                                    fontSize: current ? 16 : 14,
+                                    fontWeight: FontWeight.w900,
+                                    color: current
+                                        ? AppColors.blueDark
+                                        : AppColors.ink,
+                                  ),
+                                ),
+                                if (point.precipitationProbability > 0)
                                   Text(
-                                    current ? 'JETZT' : '${point.time.hour}:00',
-                                    style: TextStyle(
-                                      fontSize: current ? 9 : 10,
-                                      fontWeight: FontWeight.w900,
-                                      color: current
-                                          ? AppColors.blueDark
-                                          : AppColors.muted,
+                                    '${point.precipitationProbability}%',
+                                    style: const TextStyle(
+                                      fontSize: 9,
+                                      color: AppColors.blueDark,
                                     ),
                                   ),
-                                ],
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                '${point.temperature.round()}°',
-                                style: TextStyle(
-                                  fontSize: current ? 16 : 14,
-                                  fontWeight: FontWeight.w900,
-                                  color: current
-                                      ? AppColors.blueDark
-                                      : AppColors.ink,
-                                ),
-                              ),
-                              if (point.precipitationProbability > 0)
-                                Text(
-                                  '${point.precipitationProbability}%',
-                                  style: const TextStyle(
-                                    fontSize: 9,
-                                    color: AppColors.blueDark,
-                                  ),
-                                ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
                   ),
                 );
               },
