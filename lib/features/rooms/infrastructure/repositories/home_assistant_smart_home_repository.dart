@@ -176,14 +176,23 @@ class HomeAssistantSmartHomeRepository implements SmartHomeRepository {
     _RegistryInfo registry,
     HaDeviceOverlay? overlay,
   ) {
-    final siblingIds = registry.siblingsByEntityId[dto.entityId] ?? const {};
+    // Some devices (e.g. a Shelly Plug S Gen3 with bidirectional metering)
+    // expose several `device_class: energy`/`power` siblings at once — e.g.
+    // a plain consumption meter alongside a "returned/fed-in energy" one
+    // that's always 0 for a simple consumer. Sorting first and keeping only
+    // the first match makes the pick deterministic instead of depending on
+    // arbitrary Set iteration order, and happens to prefer the primary
+    // (shortest-suffix) sensor over its derived siblings.
+    final siblingIds = (registry.siblingsByEntityId[dto.entityId] ?? const {})
+        .toList()
+      ..sort();
     HaEntityStateDto? powerSensor;
     HaEntityStateDto? energySensor;
     for (final id in siblingIds) {
       final sibling = _rawById[id];
       if (sibling == null) continue;
-      if (sibling.isPowerSensor) powerSensor = sibling;
-      if (sibling.isEnergySensor) energySensor = sibling;
+      if (sibling.isPowerSensor) powerSensor ??= sibling;
+      if (sibling.isEnergySensor) energySensor ??= sibling;
     }
     return _applyOverlay(
       dto,
