@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/theme/app_theme.dart';
 import '../../../rooms/application/smart_home_bloc.dart';
 import '../../../rooms/application/smart_home_event.dart';
 import '../../../rooms/domain/entities/smart_home_device.dart';
@@ -48,24 +49,43 @@ class QuickAccessToggleTile extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 8),
-        Align(
-          alignment: Alignment.centerRight,
-          child: SizedBox(
-            width: 40,
-            height: 24,
-            child: FittedBox(
-              fit: BoxFit.fill,
-              child: Switch.adaptive(
-                value: device.isOn,
-                onChanged: (value) => context.read<SmartHomeBloc>().add(
-                  SmartHomeDeviceToggled(device.id, value),
+        const SizedBox(height: 4),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                _statusLabel,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+                style: const TextStyle(color: AppColors.muted, fontSize: 12),
+              ),
+            ),
+            SizedBox(
+              width: 48,
+              height: 30,
+              child: FittedBox(
+                fit: BoxFit.fill,
+                child: Switch.adaptive(
+                  value: device.isOn,
+                  onChanged: (value) => context.read<SmartHomeBloc>().add(
+                    SmartHomeDeviceToggled(device.id, value),
+                  ),
                 ),
               ),
             ),
-          ),
+          ],
         ),
       ],
     ),
   );
+
+  /// Watt draw when Home Assistant reports energy data for this device
+  /// (mainly `plug`s, e.g. Shelly sockets) — falls back to a plain on/off
+  /// label otherwise, since not every toggleable device has a power sensor.
+  String get _statusLabel {
+    if (device.hasEnergyData) {
+      return '${device.isOn ? device.powerWatts.toStringAsFixed(0) : '0'} W';
+    }
+    return device.isOn ? 'Ein' : 'Aus';
+  }
 }

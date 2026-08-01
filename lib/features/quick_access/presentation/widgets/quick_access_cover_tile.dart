@@ -51,6 +51,13 @@ class QuickAccessCoverTile extends StatelessWidget {
             ),
           ],
         ),
+        const SizedBox(height: 4),
+        Text(
+          _statusLabel,
+          overflow: TextOverflow.ellipsis,
+          maxLines: 1,
+          style: const TextStyle(color: AppColors.muted, fontSize: 12),
+        ),
         const SizedBox(height: 8),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -81,6 +88,18 @@ class QuickAccessCoverTile extends StatelessWidget {
       ],
     ),
   );
+
+  String get _statusLabel {
+    final position = device.coverPosition;
+    if (position != null) return '${position.round()}% geöffnet';
+    return switch (device.coverRawState) {
+      'open' => 'Offen',
+      'closed' => 'Geschlossen',
+      'opening' => 'Wird geöffnet …',
+      'closing' => 'Wird geschlossen …',
+      _ => 'Unbekannt',
+    };
+  }
 }
 
 class _MiniCoverButton extends StatelessWidget {
@@ -98,15 +117,15 @@ class _MiniCoverButton extends StatelessWidget {
   Widget build(BuildContext context) => Tooltip(
     message: tooltip,
     child: SizedBox(
-      width: 34,
-      height: 34,
+      width: 40,
+      height: 40,
       child: Material(
         color: AppColors.line.withOpacity(.7),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
         child: InkWell(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(12),
           onTap: onTap,
-          child: Icon(icon, size: 18, color: AppColors.ink),
+          child: Icon(icon, size: 22, color: AppColors.ink),
         ),
       ),
     ),
