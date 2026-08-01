@@ -45,13 +45,13 @@
     "semantic_hash": "a225a382d14d7b16b6f602a5c1d49331"
   },
   "lib/app.dart": {
-    "mtime": 1785442688.8056123,
-    "ast_hash": "764e3c7beafff30c424238dc3272d493",
+    "mtime": 1785526911.8983078,
+    "ast_hash": "135ed26ecff2cfd970844b2c382d2b20",
     "semantic_hash": ""
   },
   "lib/app/shell/app_shell.dart": {
-    "mtime": 1785477179.0840263,
-    "ast_hash": "82c1fdbc92027e170158f302e3c8574a",
+    "mtime": 1785500787.49823,
+    "ast_hash": "7ccd23ee25fece406325370eded45745",
     "semantic_hash": ""
   },
   "lib/core/theme/app_theme.dart": {
@@ -65,9 +65,9 @@
     "semantic_hash": "2b983645f96710d1e421ad2d635fd343"
   },
   "lib/features/energy/application/energy_dashboard_controller.dart": {
-    "mtime": 1785430902.857635,
-    "ast_hash": "52dfc0df70889a0778da09c28be57a5f",
-    "semantic_hash": "52dfc0df70889a0778da09c28be57a5f"
+    "mtime": 1785500787.4462297,
+    "ast_hash": "c2308fdbc58a58175d303c31a00db419",
+    "semantic_hash": ""
   },
   "lib/features/energy/domain/entities/device_usage.dart": {
     "mtime": 1785430902.8577108,
@@ -85,14 +85,9 @@
     "semantic_hash": "baae692a4e7eca200075f56c3678666f"
   },
   "lib/features/energy/domain/repositories/energy_repository.dart": {
-    "mtime": 1785430902.8577476,
-    "ast_hash": "fb6c45df51880497668d9e3705c67cad",
-    "semantic_hash": "fb6c45df51880497668d9e3705c67cad"
-  },
-  "lib/features/energy/infrastructure/repositories/in_memory_energy_repository.dart": {
-    "mtime": 1785430902.8578544,
-    "ast_hash": "af80b15c655c42dc7e13fe3710c9ef2c",
-    "semantic_hash": "af80b15c655c42dc7e13fe3710c9ef2c"
+    "mtime": 1785494401.8715937,
+    "ast_hash": "5056b5f6b8fcda8ac80afded9f693446",
+    "semantic_hash": ""
   },
   "lib/features/energy/presentation/pages/energy_analysis_page.dart": {
     "mtime": 1785477332.1669397,
@@ -100,19 +95,19 @@
     "semantic_hash": ""
   },
   "lib/features/energy/presentation/pages/energy_overview_page.dart": {
-    "mtime": 1785478483.4385424,
-    "ast_hash": "5f60144342b173e12204e5c98024f859",
+    "mtime": 1785572401.1896608,
+    "ast_hash": "01088039d452946bca4f4a026008053d",
     "semantic_hash": ""
   },
   "lib/features/energy/presentation/widgets/energy_chart_widgets.dart": {
-    "mtime": 1785476787.15443,
-    "ast_hash": "9318c2c45f4cfa95b7726e2238b36ae2",
+    "mtime": 1785500787.46623,
+    "ast_hash": "3bd1ecad1b7d31c800e290e323e50910",
     "semantic_hash": ""
   },
   "lib/features/energy/presentation/widgets/energy_metric_widgets.dart": {
-    "mtime": 1785430902.8580723,
-    "ast_hash": "a7f5ff8414b5318059173805c6e54c16",
-    "semantic_hash": "a7f5ff8414b5318059173805c6e54c16"
+    "mtime": 1785572397.8134208,
+    "ast_hash": "54b016a6425e3ccaadcfc5fe6ade0535",
+    "semantic_hash": ""
   },
   "lib/features/energy/presentation/widgets/energy_period_selector.dart": {
     "mtime": 1785436485.0564802,
@@ -125,8 +120,8 @@
     "semantic_hash": ""
   },
   "lib/features/home/application/home_controller.dart": {
-    "mtime": 1785479272.016314,
-    "ast_hash": "ebf1a1e6dd5318392b5095113ff1a0ba",
+    "mtime": 1785500560.2297328,
+    "ast_hash": "4d93958d2eed99b66ea1eaab768dfa3a",
     "semantic_hash": ""
   },
   "lib/features/home/domain/home_models.dart": {
@@ -135,13 +130,13 @@
     "semantic_hash": ""
   },
   "lib/features/home/infrastructure/home_data_service.dart": {
-    "mtime": 1785479806.8175166,
-    "ast_hash": "f05fa2b9b018a1102263168b5f1f0578",
+    "mtime": 1785496826.6693828,
+    "ast_hash": "df521d4b20fd21a464309d45ad8453e7",
     "semantic_hash": ""
   },
   "lib/features/home/presentation/pages/home_page.dart": {
-    "mtime": 1785477583.0849483,
-    "ast_hash": "4771f737e86a872a928f41bc48934f75",
+    "mtime": 1785525738.934077,
+    "ast_hash": "031f4ab795c74fad4547971918c03a3b",
     "semantic_hash": ""
   },
   "lib/features/home/presentation/widgets/home_card.dart": {
@@ -150,28 +145,23 @@
     "semantic_hash": "9b0ba798ed996dc2b235bc129b9c1500"
   },
   "lib/features/home/presentation/widgets/home_overview.dart": {
-    "mtime": 1785477578.9684272,
-    "ast_hash": "baab7412200f83dd8ad1d913e53512b7",
+    "mtime": 1785527690.8651726,
+    "ast_hash": "f61d7bb756f828fa0263daf1800dcf9c",
     "semantic_hash": ""
   },
   "lib/features/home/presentation/widgets/markets_card.dart": {
-    "mtime": 1785479191.3650527,
-    "ast_hash": "07824c41f3971cfc864c6661c2d39846",
-    "semantic_hash": ""
-  },
-  "lib/features/home/presentation/widgets/top_devices_card.dart": {
-    "mtime": 1785481240.6806061,
-    "ast_hash": "01a8f97e7e6ed4df86f932ed4123bf3d",
+    "mtime": 1785500787.4382298,
+    "ast_hash": "fa6933fa30019ff91e0734923c4f72cb",
     "semantic_hash": ""
   },
   "lib/features/home/presentation/widgets/weather_card.dart": {
-    "mtime": 1785479891.7103405,
-    "ast_hash": "38d279bc9508877cd0c03c4977a47812",
+    "mtime": 1785571482.6437783,
+    "ast_hash": "5aa6eed92cf2053d70ea8797b5cb10d9",
     "semantic_hash": ""
   },
   "lib/features/rooms/domain/entities/smart_home_device.dart": {
-    "mtime": 1785482076.4025104,
-    "ast_hash": "3adc23c9cc2b8ed277b6c4fbe18f7adf",
+    "mtime": 1785517246.2723453,
+    "ast_hash": "d7f890ad76ab8297b2fd87787f004725",
     "semantic_hash": ""
   },
   "lib/features/rooms/domain/repositories/smart_home_repository.dart": {
@@ -180,28 +170,28 @@
     "semantic_hash": ""
   },
   "lib/features/rooms/presentation/pages/room_page.dart": {
-    "mtime": 1785477653.0270512,
-    "ast_hash": "c4f7bd5a582747b8d5496f1e90592c59",
+    "mtime": 1785499549.0432622,
+    "ast_hash": "95fc3cb88acfc5c0dd6c077e7ba467ca",
     "semantic_hash": ""
   },
   "lib/features/rooms/presentation/widgets/room_device_list.dart": {
-    "mtime": 1785442688.807422,
-    "ast_hash": "a7bacf04259b87ec1f0283fadbc8fc38",
+    "mtime": 1785499484.2642517,
+    "ast_hash": "affcc3379a84006136a9666de0e7b35c",
     "semantic_hash": ""
   },
   "lib/features/rooms/presentation/widgets/room_dialogs.dart": {
-    "mtime": 1785482853.1048737,
-    "ast_hash": "ddaa5ac31a2343ad2f91097d31d1e7d7",
+    "mtime": 1785517937.9189296,
+    "ast_hash": "83fc7e16ea564b1aded6bdf301e5e365",
     "semantic_hash": ""
   },
   "lib/features/rooms/presentation/widgets/room_layout.dart": {
-    "mtime": 1785478864.3354154,
-    "ast_hash": "ad9911fdb0ef235f4d3111644baaad95",
+    "mtime": 1785499463.7196085,
+    "ast_hash": "5852412a624d1482c358bb99cd702901",
     "semantic_hash": ""
   },
   "lib/features/rooms/presentation/widgets/room_map.dart": {
-    "mtime": 1785442688.8076978,
-    "ast_hash": "85b044760107d974fc2fd9fc1c63105b",
+    "mtime": 1785499477.623629,
+    "ast_hash": "3110c86e68271c1b732cf7c83efd32f2",
     "semantic_hash": ""
   },
   "lib/features/rooms/presentation/widgets/smart_home_device_ui.dart": {
@@ -215,8 +205,8 @@
     "semantic_hash": "e3f828f1c78b3ccd6d2ee02f29564b21"
   },
   "test/widget_test.dart": {
-    "mtime": 1785478552.3987014,
-    "ast_hash": "6503e9f2b3935b7a7f3d7446948f83a1",
+    "mtime": 1785494624.3031921,
+    "ast_hash": "098f4990fae870da6b63001ad98f89d4",
     "semantic_hash": ""
   },
   "web/manifest.json": {
@@ -250,14 +240,14 @@
     "semantic_hash": "e175e436acacf76c814d83532d0b662c"
   },
   "pubspec.yaml": {
-    "mtime": 1785442688.8079057,
-    "ast_hash": "16b38a2ae38867b21953f5dcf71c935a",
+    "mtime": 1785526571.978624,
+    "ast_hash": "49d9bfdb533f0b333f6d36acdec5c050",
     "semantic_hash": ""
   },
   "web/index.html": {
-    "mtime": 1785430902.8595464,
-    "ast_hash": "36178b69c4bcd444212491979d53d54e",
-    "semantic_hash": "36178b69c4bcd444212491979d53d54e"
+    "mtime": 1785523364.7666965,
+    "ast_hash": "68cbe1c054c742906300881fb9ae0e59",
+    "semantic_hash": ""
   },
   "assets/images/living-room.png": {
     "mtime": 1785430902.8500435,
@@ -420,13 +410,13 @@
     "semantic_hash": ""
   },
   "lib/core/home_assistant/ha_rest_client.dart": {
-    "mtime": 1785442688.8059468,
-    "ast_hash": "134006962aaece520b58fbe4764fc6d5",
+    "mtime": 1785496589.9356394,
+    "ast_hash": "5f8e10a1ee99d8f7443b6f8a4805b4ee",
     "semantic_hash": ""
   },
   "lib/core/home_assistant/ha_websocket_client.dart": {
-    "mtime": 1785480536.0111716,
-    "ast_hash": "6513d2f1989d57ab5c336e42faa295bc",
+    "mtime": 1785501381.3235757,
+    "ast_hash": "3529491262b5cbe0c9f4e2bca49b2368",
     "semantic_hash": ""
   },
   "lib/features/ha_connection/application/ha_connection_bloc.dart": {
@@ -500,18 +490,18 @@
     "semantic_hash": ""
   },
   "lib/features/rooms/infrastructure/data_sources/ha_device_overlay_local_data_source.dart": {
-    "mtime": 1785442688.8070872,
-    "ast_hash": "03415199df6cd60aff899a021a32f1d4",
+    "mtime": 1785496562.756757,
+    "ast_hash": "66aa3e0533bed7645e5ee30643bcd43d",
     "semantic_hash": ""
   },
   "lib/features/rooms/infrastructure/models/ha_entity_state_dto.dart": {
-    "mtime": 1785482093.7583618,
-    "ast_hash": "c3c5b022632b200b8d1d2f268e4bd1c3",
+    "mtime": 1785570514.363893,
+    "ast_hash": "67d7bb5b0a54b4e4fff9482260375e73",
     "semantic_hash": ""
   },
   "lib/features/rooms/infrastructure/repositories/home_assistant_smart_home_repository.dart": {
-    "mtime": 1785482116.8865466,
-    "ast_hash": "432450b49d259c10a5aec168982e14ab",
+    "mtime": 1785584318.1666713,
+    "ast_hash": "5ac4e92c844393259ba4ae6c5b705b6c",
     "semantic_hash": ""
   },
   "test/core/home_assistant/ha_rest_client_test.dart": {
@@ -520,8 +510,8 @@
     "semantic_hash": ""
   },
   "test/core/home_assistant/ha_websocket_client_test.dart": {
-    "mtime": 1785442688.8085375,
-    "ast_hash": "8861c0c7b5ac9450252d3dcaf0d42a84",
+    "mtime": 1785501381.3315759,
+    "ast_hash": "ddecc4bdd6f0e11b4cba14b3e624942a",
     "semantic_hash": ""
   },
   "test/features/ha_connection/ha_connection_config_test.dart": {
@@ -560,8 +550,8 @@
     "semantic_hash": ""
   },
   "lib/app/shell/app_navigation.dart": {
-    "mtime": 1785477134.5359716,
-    "ast_hash": "95dcfb0b479cd24ed49458c4bb3a3b80",
+    "mtime": 1785571901.1688743,
+    "ast_hash": "7a26a7b36dc5575dd2ebd2eec8bd3055",
     "semantic_hash": ""
   },
   "lib/app/shell/app_navigation_bloc.dart": {
@@ -592,6 +582,426 @@
   "lib/features/rooms/domain/entities/cover_action.dart": {
     "mtime": 1785482062.2918775,
     "ast_hash": "94dcfc0e551e15c3fdeef872ec36252b",
+    "semantic_hash": ""
+  },
+  "lib/app/shell/settings_hub_page.dart": {
+    "mtime": 1785526921.7233946,
+    "ast_hash": "26beab61b0dbebd04e1cf0979184c16e",
+    "semantic_hash": ""
+  },
+  "lib/features/quick_access/application/quick_access_bloc.dart": {
+    "mtime": 1785490934.715614,
+    "ast_hash": "1e3eb930767d4d760303c23387c0cdaa",
+    "semantic_hash": ""
+  },
+  "lib/features/quick_access/application/quick_access_event.dart": {
+    "mtime": 1785490926.9555595,
+    "ast_hash": "b25e7058376d61fdf2d29432f9000425",
+    "semantic_hash": ""
+  },
+  "lib/features/quick_access/application/quick_access_state.dart": {
+    "mtime": 1785490929.9476025,
+    "ast_hash": "211d725319101cabde42a562b0234cb0",
+    "semantic_hash": ""
+  },
+  "lib/features/quick_access/domain/quick_access_limits.dart": {
+    "mtime": 1785525743.3129334,
+    "ast_hash": "61450e9ca728dd4d4121a07d3d563a3a",
+    "semantic_hash": ""
+  },
+  "lib/features/quick_access/domain/repositories/quick_access_repository.dart": {
+    "mtime": 1785490908.339551,
+    "ast_hash": "191daf4af66606202d2ad6a549f08ea7",
+    "semantic_hash": ""
+  },
+  "lib/features/quick_access/infrastructure/data_sources/quick_access_local_data_source.dart": {
+    "mtime": 1785490911.263558,
+    "ast_hash": "6dd16b3bb2548e2783bb5d171c1580b2",
+    "semantic_hash": ""
+  },
+  "lib/features/quick_access/infrastructure/repositories/quick_access_repository_impl.dart": {
+    "mtime": 1785490913.0275621,
+    "ast_hash": "5350a889768821e6df449c36de8d64cb",
+    "semantic_hash": ""
+  },
+  "lib/features/quick_access/presentation/pages/quick_access_settings_page.dart": {
+    "mtime": 1785491032.739848,
+    "ast_hash": "f65e0cc03cc7597ecab49b627e47d712",
+    "semantic_hash": ""
+  },
+  "lib/features/quick_access/presentation/widgets/quick_access_card.dart": {
+    "mtime": 1785568407.6574278,
+    "ast_hash": "39b10fba534bb3cd700ae62964ddc7db",
+    "semantic_hash": ""
+  },
+  "lib/features/quick_access/presentation/widgets/quick_access_cover_tile.dart": {
+    "mtime": 1785568739.93259,
+    "ast_hash": "e74ea96e0e3bc2becb2d12551b1bced8",
+    "semantic_hash": ""
+  },
+  "lib/features/quick_access/presentation/widgets/quick_access_toggle_tile.dart": {
+    "mtime": 1785569064.29737,
+    "ast_hash": "c9f3213df7286b0d4ef0593daf2e5a81",
+    "semantic_hash": ""
+  },
+  ".claude/settings.json": {
+    "mtime": 1785493507.3848195,
+    "ast_hash": "64607150f5a4f721422d1293f364c26a",
+    "semantic_hash": ""
+  },
+  "lib/features/energy/infrastructure/data_sources/energy_local_data_source.dart": {
+    "mtime": 1785494410.239523,
+    "ast_hash": "19f2dcd4c0c0d6fb644acdfcaf2b6311",
+    "semantic_hash": ""
+  },
+  "lib/features/energy/infrastructure/repositories/energy_repository_impl.dart": {
+    "mtime": 1785494421.39164,
+    "ast_hash": "6fdea1c2af275361b63c28d951c6db90",
+    "semantic_hash": ""
+  },
+  "lib/features/energy/presentation/pages/energy_price_settings_page.dart": {
+    "mtime": 1785500787.4542298,
+    "ast_hash": "1602d626d3134973fdfa1ec346dfe75d",
+    "semantic_hash": ""
+  },
+  "lib/features/spotify/application/spotify_bloc.dart": {
+    "mtime": 1785523473.9041545,
+    "ast_hash": "3a92a51753384491bdd3f6a78421030d",
+    "semantic_hash": ""
+  },
+  "lib/features/spotify/application/spotify_event.dart": {
+    "mtime": 1785523459.8521318,
+    "ast_hash": "e28a37cf00500b1a4dc2ab8e80e54d8f",
+    "semantic_hash": ""
+  },
+  "lib/features/spotify/application/spotify_state.dart": {
+    "mtime": 1785523453.9641223,
+    "ast_hash": "72a1ce3a894407abc7f76372f2e0e8fb",
+    "semantic_hash": ""
+  },
+  "lib/features/spotify/domain/entities/spotify_now_playing.dart": {
+    "mtime": 1785522380.641438,
+    "ast_hash": "2fd55004a0375fce65484a1156b4bcb6",
+    "semantic_hash": ""
+  },
+  "lib/features/spotify/domain/failures/spotify_failure.dart": {
+    "mtime": 1785521674.3673828,
+    "ast_hash": "541e295c2170ca8d08641af66278e9ab",
+    "semantic_hash": ""
+  },
+  "lib/features/spotify/domain/repositories/spotify_repository.dart": {
+    "mtime": 1785523420.5040698,
+    "ast_hash": "61c23ef7e9f50d84fe4f316b132d4fbd",
+    "semantic_hash": ""
+  },
+  "lib/features/spotify/domain/value_objects/spotify_auth_config.dart": {
+    "mtime": 1785519130.8494225,
+    "ast_hash": "60eaa56bf2242eda0caa2739384f99e3",
+    "semantic_hash": ""
+  },
+  "lib/features/spotify/infrastructure/data_sources/spotify_auth_data_source.dart": {
+    "mtime": 1785523410.5440545,
+    "ast_hash": "d3907adc561b0cf3c0c124ad1f85730a",
+    "semantic_hash": ""
+  },
+  "lib/features/spotify/infrastructure/data_sources/spotify_local_data_source.dart": {
+    "mtime": 1785518905.9369292,
+    "ast_hash": "c2b81b15c7d717fb8259434e72f67ca3",
+    "semantic_hash": ""
+  },
+  "lib/features/spotify/infrastructure/data_sources/spotify_pkce_helper.dart": {
+    "mtime": 1785518887.0168881,
+    "ast_hash": "67583e262291da401d2761835bf14081",
+    "semantic_hash": ""
+  },
+  "lib/features/spotify/infrastructure/data_sources/spotify_remote_data_source.dart": {
+    "mtime": 1785523428.948083,
+    "ast_hash": "325dba72f9ef53d86d2cd08492503f26",
+    "semantic_hash": ""
+  },
+  "lib/features/spotify/infrastructure/models/spotify_currently_playing_dto.dart": {
+    "mtime": 1785522376.1614258,
+    "ast_hash": "e42e0d3a8a6aa76a6dfc4d435a2e2176",
+    "semantic_hash": ""
+  },
+  "lib/features/spotify/infrastructure/models/spotify_token_response_dto.dart": {
+    "mtime": 1785518889.536752,
+    "ast_hash": "4ec692821925c6edadc6ca5feecada42",
+    "semantic_hash": ""
+  },
+  "lib/features/spotify/infrastructure/repositories/spotify_repository_impl.dart": {
+    "mtime": 1785523444.1750531,
+    "ast_hash": "0c1b52a970f693bf990da658bbc4a817",
+    "semantic_hash": ""
+  },
+  "lib/features/spotify/presentation/pages/spotify_settings_page.dart": {
+    "mtime": 1785519009.9051566,
+    "ast_hash": "cb79c9cfe3fa92d281342e06200e9c7a",
+    "semantic_hash": ""
+  },
+  "lib/features/spotify/presentation/widgets/spotify_now_playing_card.dart": {
+    "mtime": 1785525311.98015,
+    "ast_hash": "a9da4e9c30ff67ecb90356cbdea06c6d",
+    "semantic_hash": ""
+  },
+  "test/features/spotify/application/spotify_bloc_test.dart": {
+    "mtime": 1785523504.076204,
+    "ast_hash": "032a1916d9eb233045141756efe6d702",
+    "semantic_hash": ""
+  },
+  "test/features/spotify/domain/spotify_auth_config_test.dart": {
+    "mtime": 1785519062.7452726,
+    "ast_hash": "f2533f0398b761714783e0daeed4b34f",
+    "semantic_hash": ""
+  },
+  "test/features/spotify/infrastructure/spotify_currently_playing_dto_test.dart": {
+    "mtime": 1785522457.837644,
+    "ast_hash": "8b767108ab2b18c232e8c1748239a68f",
+    "semantic_hash": ""
+  },
+  "test/features/spotify/infrastructure/spotify_pkce_helper_test.dart": {
+    "mtime": 1785519076.2013023,
+    "ast_hash": "f4ac33a826ba4e4d00c47b5b58ec45a5",
+    "semantic_hash": ""
+  },
+  "test/features/spotify/infrastructure/spotify_token_response_dto_test.dart": {
+    "mtime": 1785519071.9372928,
+    "ast_hash": "0029f0e2437224ad407f24a0db6c6e79",
+    "semantic_hash": ""
+  },
+  "web/auth.html": {
+    "mtime": 1785518827.0087574,
+    "ast_hash": "2800215bc2e51ba4bb39ce3c0806f002",
+    "semantic_hash": ""
+  },
+  "lib/features/spotify/domain/entities/spotify_playback_command.dart": {
+    "mtime": 1785521671.351373,
+    "ast_hash": "863137da78d3cbde725efd216f3aa491",
+    "semantic_hash": ""
+  },
+  "lib/features/spotify/infrastructure/data_sources/spotify_web_playback_sdk.dart": {
+    "mtime": 1785523602.0243738,
+    "ast_hash": "f3ed7b9bfa48e7a7bd04e1a7ed5b30b5",
+    "semantic_hash": ""
+  },
+  "lib/features/spotify/infrastructure/data_sources/spotify_web_playback_sdk_stub.dart": {
+    "mtime": 1785523598.340367,
+    "ast_hash": "f4508b9ad4b98116b2fac5a477972756",
+    "semantic_hash": ""
+  },
+  "lib/features/spotify/infrastructure/data_sources/spotify_web_playback_sdk_web.dart": {
+    "mtime": 1785523798.932746,
+    "ast_hash": "fa18dd4579e0b6524f824096526cea56",
+    "semantic_hash": ""
+  },
+  "web/spotify_playback.js": {
+    "mtime": 1785523361.5199666,
+    "ast_hash": "188f4b4b39c677da4120ff114cd0a614",
+    "semantic_hash": ""
+  },
+  "lib/features/parcel_tracking/domain/entities/carrier.dart": {
+    "mtime": 1785525427.6964195,
+    "ast_hash": "c69ba0799a9775b0a240887753c76730",
+    "semantic_hash": ""
+  },
+  "lib/features/parcel_tracking/domain/entities/parcel.dart": {
+    "mtime": 1785525433.3844275,
+    "ast_hash": "e25f1d46a252b2f393f4cbbd0052d60d",
+    "semantic_hash": ""
+  },
+  "lib/features/parcel_tracking/domain/entities/parcel_candidate.dart": {
+    "mtime": 1785525436.3764317,
+    "ast_hash": "b1d3202f709ea31adec3a648145a9666",
+    "semantic_hash": ""
+  },
+  "lib/features/parcel_tracking/domain/entities/parcel_status.dart": {
+    "mtime": 1785525429.3604217,
+    "ast_hash": "7cf3fc17abb5cf040903db54a0c98d05",
+    "semantic_hash": ""
+  },
+  "lib/features/parcel_tracking/domain/failures/parcel_tracking_failure.dart": {
+    "mtime": 1785525445.0684443,
+    "ast_hash": "5405692d19a036d390a5f10745e4d0e6",
+    "semantic_hash": ""
+  },
+  "lib/features/parcel_tracking/domain/repositories/parcel_repository.dart": {
+    "mtime": 1785526420.4382963,
+    "ast_hash": "df3c9cfef6c3dc075fb8c66a28ec35ff",
+    "semantic_hash": ""
+  },
+  "lib/features/parcel_tracking/domain/value_objects/mailbox_account.dart": {
+    "mtime": 1785525440.704438,
+    "ast_hash": "90d7dde0bb679ba16eca505e14e1e2b0",
+    "semantic_hash": ""
+  },
+  "lib/features/parcel_tracking/domain/repositories/mailbox_repository.dart": {
+    "mtime": 1785525450.0724514,
+    "ast_hash": "1914503ffbede68cf9d6fbed9cf39e1d",
+    "semantic_hash": ""
+  },
+  "lib/features/parcel_tracking/domain/services/tracking_number_extractor.dart": {
+    "mtime": 1785525465.520474,
+    "ast_hash": "a7af59723c637d03d5b6132e9efef018",
+    "semantic_hash": ""
+  },
+  "test/features/parcel_tracking/domain/mailbox_account_test.dart": {
+    "mtime": 1785525479.3804946,
+    "ast_hash": "695ff8f0240b658c515bc50e25fdad78",
+    "semantic_hash": ""
+  },
+  "test/features/parcel_tracking/domain/tracking_number_extractor_test.dart": {
+    "mtime": 1785525475.3964887,
+    "ast_hash": "9873387d190e70bd931e380650eb3232",
+    "semantic_hash": ""
+  },
+  "lib/features/parcel_tracking/application/parcel_tracking_bloc.dart": {
+    "mtime": 1785527266.7441661,
+    "ast_hash": "cee7c2694ae0aa3ad1d4838ca277c41a",
+    "semantic_hash": ""
+  },
+  "lib/features/parcel_tracking/application/parcel_tracking_event.dart": {
+    "mtime": 1785526397.7142477,
+    "ast_hash": "954790ed07826b5cb14e0a7609bee1ab",
+    "semantic_hash": ""
+  },
+  "lib/features/parcel_tracking/application/parcel_tracking_state.dart": {
+    "mtime": 1785526336.430117,
+    "ast_hash": "a8f673ec8859013344a9cb6a3df23c9d",
+    "semantic_hash": ""
+  },
+  "lib/features/parcel_tracking/infrastructure/data_sources/parcel_local_data_source.dart": {
+    "mtime": 1785525627.84179,
+    "ast_hash": "662a693307645daa94d7a10635bf1c98",
+    "semantic_hash": ""
+  },
+  "lib/features/parcel_tracking/infrastructure/models/parcel_record_dto.dart": {
+    "mtime": 1785525624.5887258,
+    "ast_hash": "2c6f7a5e9fcf5ba75de18bb04c7a642a",
+    "semantic_hash": ""
+  },
+  "lib/features/parcel_tracking/infrastructure/repositories/track17_parcel_repository.dart": {
+    "mtime": 1785568761.6326492,
+    "ast_hash": "34954030b7123a60adf04e67773f28e4",
+    "semantic_hash": ""
+  },
+  "lib/features/parcel_tracking/presentation/pages/parcel_add_page.dart": {
+    "mtime": 1785525715.9608843,
+    "ast_hash": "582fbbbb33834ad41b0090b10b7e2249",
+    "semantic_hash": ""
+  },
+  "lib/features/parcel_tracking/presentation/pages/parcel_list_page.dart": {
+    "mtime": 1785568401.4195726,
+    "ast_hash": "d7fcc3f9f19946fb474564f9de6d01d5",
+    "semantic_hash": ""
+  },
+  "lib/features/parcel_tracking/presentation/widgets/parcel_list_tile.dart": {
+    "mtime": 1785568779.3926969,
+    "ast_hash": "cb90e8dd44ae6988a426932eed1c61cf",
+    "semantic_hash": ""
+  },
+  "lib/features/parcel_tracking/presentation/widgets/parcel_tracking_card.dart": {
+    "mtime": 1785526887.5673187,
+    "ast_hash": "af3c97a993017493ece2fa3a018d3689",
+    "semantic_hash": ""
+  },
+  "lib/features/parcel_tracking/infrastructure/data_sources/track17_api_key_local_data_source.dart": {
+    "mtime": 1785526287.4700131,
+    "ast_hash": "475febc9665fdb10a00092901ca0c3fa",
+    "semantic_hash": ""
+  },
+  "lib/features/parcel_tracking/infrastructure/data_sources/track17_remote_data_source.dart": {
+    "mtime": 1785526304.4820492,
+    "ast_hash": "fa0b47deb1a00be6a58faa2918e15a23",
+    "semantic_hash": ""
+  },
+  "lib/features/parcel_tracking/infrastructure/models/carrier_track17_code.dart": {
+    "mtime": 1785526290.3780193,
+    "ast_hash": "f25b6dd7c16e22579e72f2546d0d0613",
+    "semantic_hash": ""
+  },
+  "lib/features/parcel_tracking/infrastructure/models/track17_status_dto.dart": {
+    "mtime": 1785568740.560592,
+    "ast_hash": "71f9fbbbda288930858ef0fb2fafa834",
+    "semantic_hash": ""
+  },
+  "lib/features/parcel_tracking/presentation/pages/track17_settings_page.dart": {
+    "mtime": 1785526437.1703322,
+    "ast_hash": "85cdb2483aa502494a1a987d058a2b26",
+    "semantic_hash": ""
+  },
+  "test/features/parcel_tracking/infrastructure/carrier_track17_code_test.dart": {
+    "mtime": 1785526481.146427,
+    "ast_hash": "483ddaf54dde2cca0d2aa2caf6b09024",
+    "semantic_hash": ""
+  },
+  "test/features/parcel_tracking/infrastructure/track17_status_dto_test.dart": {
+    "mtime": 1785568791.4247286,
+    "ast_hash": "921106e94ae83e38f3420403948ce997",
+    "semantic_hash": ""
+  },
+  "lib/features/parcel_tracking/application/mailbox_bloc.dart": {
+    "mtime": 1785527270.7481751,
+    "ast_hash": "2d07b2049d6bcb69f0608a8debd539c4",
+    "semantic_hash": ""
+  },
+  "lib/features/parcel_tracking/application/mailbox_event.dart": {
+    "mtime": 1785526798.683122,
+    "ast_hash": "7a98392fac543566d7eedb86b539b472",
+    "semantic_hash": ""
+  },
+  "lib/features/parcel_tracking/application/mailbox_state.dart": {
+    "mtime": 1785526802.0351293,
+    "ast_hash": "42da1125516946889322f841a944227f",
+    "semantic_hash": ""
+  },
+  "lib/features/parcel_tracking/infrastructure/data_sources/imap_scan_data_source.dart": {
+    "mtime": 1785526770.1910589,
+    "ast_hash": "0d29359de2e787427c5fbb3c4041807d",
+    "semantic_hash": ""
+  },
+  "lib/features/parcel_tracking/infrastructure/data_sources/mailbox_credentials_local_data_source.dart": {
+    "mtime": 1785526781.7455413,
+    "ast_hash": "963cc0866e7a9e23a0785750eb4829d1",
+    "semantic_hash": ""
+  },
+  "lib/features/parcel_tracking/infrastructure/repositories/imap_mailbox_repository.dart": {
+    "mtime": 1785526792.0771697,
+    "ast_hash": "d4c6ff2e5546e445b3a14376a4e07af5",
+    "semantic_hash": ""
+  },
+  "lib/features/parcel_tracking/presentation/pages/mailbox_settings_page.dart": {
+    "mtime": 1785526845.3872252,
+    "ast_hash": "fadeb276c04f9d6f545de983ae0b0657",
+    "semantic_hash": ""
+  },
+  "lib/features/parcel_tracking/presentation/pages/parcel_candidate_confirmation_page.dart": {
+    "mtime": 1785526935.855426,
+    "ast_hash": "c18664714b50bd2e46b2f2cca0cc5f75",
+    "semantic_hash": ""
+  },
+  "lib/features/parcel_tracking/domain/services/parcel_sorter.dart": {
+    "mtime": 1785527662.1651022,
+    "ast_hash": "25a9c569611f3f3466e41e6e56ea1093",
+    "semantic_hash": ""
+  },
+  "test/features/parcel_tracking/application/mailbox_bloc_test.dart": {
+    "mtime": 1785527840.4175363,
+    "ast_hash": "b952fcd2cd56681c2a44ec021684dacd",
+    "semantic_hash": ""
+  },
+  "test/features/parcel_tracking/application/parcel_tracking_bloc_test.dart": {
+    "mtime": 1785527718.9787388,
+    "ast_hash": "d80e6c1e6b462895288be27236505427",
+    "semantic_hash": ""
+  },
+  "test/features/parcel_tracking/domain/parcel_sorter_test.dart": {
+    "mtime": 1785527701.4651985,
+    "ast_hash": "e80b9f215220a513a958a455b312804d",
+    "semantic_hash": ""
+  },
+  "Screenshot 2026-08-01 132411.png": {
+    "mtime": 1785583463.7500908,
+    "ast_hash": "0ad0fbea7f609c765a9e1582830842e0",
     "semantic_hash": ""
   }
 }
