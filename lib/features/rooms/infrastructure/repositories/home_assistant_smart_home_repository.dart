@@ -205,18 +205,24 @@ class HomeAssistantSmartHomeRepository implements SmartHomeRepository {
         token: config.token,
       );
       final overlays = await _overlayDataSource.readAll();
+      // Diagnostic/config entities are only hidden from becoming their own
+      // tile below — they must still be cached here first, otherwise a
+      // diagnostic-categorized companion power/energy sensor (common for
+      // Shelly plugs) would never be visible to _buildDevice's sibling
+      // lookup and its sibling device would show 0 W/kWh forever.
       final dtos = states
-          .where((json) {
-            final id = json['entity_id'] as String;
-            return _isDomainSupported(id) && !registry.diagnosticEntityIds.contains(id);
-          })
+          .where((json) => _isDomainSupported(json['entity_id'] as String))
           .map(HaEntityStateDto.fromJson)
           .toList();
       for (final dto in dtos) {
         _rawById[dto.entityId] = dto;
       }
       return dtos
-          .where((dto) => !_isAbsorbedCompanion(dto, registry))
+          .where(
+            (dto) =>
+                !registry.diagnosticEntityIds.contains(dto.entityId) &&
+                !_isAbsorbedCompanion(dto, registry),
+          )
           .map((dto) => _buildDevice(dto, registry, overlays[dto.entityId]))
           .toList();
     } on HaAuthException {
@@ -282,8 +288,10 @@ class HomeAssistantSmartHomeRepository implements SmartHomeRepository {
             if (entityId == null || newState is! Map<String, dynamic>) return;
             if (!_isDomainSupported(entityId)) return;
             final registry = await _registryInfo(config);
-            if (registry.diagnosticEntityIds.contains(entityId)) return;
             final dto = HaEntityStateDto.fromJson(newState);
+            // Cached regardless of diagnostic status — see fetchDevices for
+            // why a diagnostic-categorized companion sensor must still be
+            // visible to sibling lookups.
             _rawById[entityId] = dto;
             final overlays = await _overlayDataSource.readAll();
 
@@ -297,6 +305,8 @@ class HomeAssistantSmartHomeRepository implements SmartHomeRepository {
                 if (siblingDto == null || siblingDto.domain == 'sensor') continue;
                 _byId[siblingId] = _buildDevice(siblingDto, registry, overlays[siblingId]);
               }
+            } else if (registry.diagnosticEntityIds.contains(entityId)) {
+              _byId.remove(entityId);
             } else {
               _byId[entityId] = _buildDevice(dto, registry, overlays[entityId]);
             }
