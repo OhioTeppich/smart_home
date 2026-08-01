@@ -47,3 +47,7 @@ app.*.map.json
 # graphify local machine state (not portable across machines)
 graphify-out/.graphify_python
 graphify-out/.graphify_root
+
+# Local machine state (absolute paths, per-machine dev tooling)
+/Caddyfile
+/devtools_options.yaml
