@@ -7,6 +7,65 @@ import '../../application/home_controller.dart';
 import '../../domain/home_models.dart';
 import 'home_card.dart';
 
+const double _hourItemExtent = 58.0;
+
+/// Snaps the hourly scroller to the nearest hour, the same way
+/// `PageScrollPhysics` snaps a `PageView` — the target is computed inside
+/// the ballistic simulation itself, so it applies on every drag release
+/// (slow or flung), not just when a `ScrollEndNotification` happens to fire.
+class _SnapScrollPhysics extends ScrollPhysics {
+  const _SnapScrollPhysics({super.parent});
+
+  @override
+  _SnapScrollPhysics applyTo(ScrollPhysics? ancestor) {
+    return _SnapScrollPhysics(parent: buildParent(ancestor));
+  }
+
+  double _snapTarget(
+    ScrollMetrics position,
+    double velocity,
+    Tolerance tolerance,
+  ) {
+    var page = position.pixels / _hourItemExtent;
+    if (velocity < -tolerance.velocity) {
+      page -= 0.5;
+    } else if (velocity > tolerance.velocity) {
+      page += 0.5;
+    }
+    return page.roundToDouble() * _hourItemExtent;
+  }
+
+  @override
+  Simulation? createBallisticSimulation(
+    ScrollMetrics position,
+    double velocity,
+  ) {
+    if ((velocity <= 0.0 && position.pixels <= position.minScrollExtent) ||
+        (velocity >= 0.0 && position.pixels >= position.maxScrollExtent)) {
+      return super.createBallisticSimulation(position, velocity);
+    }
+    final tolerance = toleranceFor(position);
+    final target = _snapTarget(
+      position,
+      velocity,
+      tolerance,
+    ).clamp(position.minScrollExtent, position.maxScrollExtent);
+    if (target == position.pixels) {
+      return null;
+    }
+    return ScrollSpringSimulation(
+      spring,
+      position.pixels,
+      target,
+      velocity,
+      tolerance: tolerance,
+    );
+  }
+
+  @override
+  bool get allowImplicitScrolling => false;
+}
+
 /// What `WeatherCard` needs out of `HomeController`, compared by value via
 /// `context.select` — without this, any unrelated controller notification
 /// (e.g. the BTC ticker firing many times a minute) would rebuild the
@@ -43,28 +102,6 @@ class _WeatherCardState extends State<WeatherCard> {
     super.dispose();
   }
 
-  static const double _hourItemExtent = 58.0;
-
-  bool _onScrollEnd(ScrollNotification notification, int itemCount) {
-    if (notification is! ScrollEndNotification ||
-        !_hourlyController.hasClients ||
-        itemCount == 0) {
-      return false;
-    }
-    final maxExtent = _hourlyController.position.maxScrollExtent;
-    final offset = _hourlyController.offset;
-    final index = (offset / _hourItemExtent).round().clamp(0, itemCount - 1);
-    final target = (index * _hourItemExtent).clamp(0.0, maxExtent);
-    if ((target - offset).abs() > 0.5) {
-      _hourlyController.animateTo(
-        target,
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOut,
-      );
-    }
-    return false;
-  }
-
   void _centerCurrentHour(WeatherSnapshot weather) {
     if (_centeredWeather == weather.updatedAt.toIso8601String() ||
         weather.hourly.isEmpty) {
@@ -82,7 +119,10 @@ class _WeatherCardState extends State<WeatherCard> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_hourlyController.hasClients) return;
       _hourlyController.jumpTo(
-        (index * 58.0).clamp(0.0, _hourlyController.position.maxScrollExtent),
+        (index * _hourItemExtent).clamp(
+          0.0,
+          _hourlyController.position.maxScrollExtent,
+        ),
       );
       if (mounted) {
         setState(() => _centeredWeather = weather.updatedAt.toIso8601String());
@@ -220,87 +260,81 @@ class _WeatherCardState extends State<WeatherCard> {
                       );
                 return SizedBox(
                   height: 68,
-                  child: NotificationListener<ScrollNotification>(
-                    onNotification: (notification) =>
-                        _onScrollEnd(notification, weather.hourly.length),
-                    child: ListView.builder(
-                      controller: _hourlyController,
-                      scrollDirection: Axis.horizontal,
-                      physics: const BouncingScrollPhysics(),
-                      padding: EdgeInsets.symmetric(
-                        horizontal: (constraints.maxWidth / 2 - 29).clamp(
-                          0.0,
-                          double.infinity,
-                        ),
-                      ),
-                      itemCount: weather.hourly.length,
-                      itemBuilder: (_, i) {
-                        final point = weather.hourly[i];
-                        final current = i == currentIndex;
-                        return SizedBox(
-                          width: 58,
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 180),
-                            margin: const EdgeInsets.symmetric(horizontal: 2),
-                            padding: const EdgeInsets.symmetric(vertical: 3),
-                            decoration: BoxDecoration(
-                              color: current
-                                  ? AppColors.blue.withOpacity(.18)
-                                  : Colors.transparent,
-                              borderRadius: BorderRadius.circular(12),
-                              border: current
-                                  ? Border.all(
-                                      color: AppColors.blueDark.withOpacity(
-                                        .55,
-                                      ),
-                                      width: 1.5,
-                                    )
-                                  : null,
-                            ),
-                            child: Column(
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      current
-                                          ? 'JETZT'
-                                          : '${point.time.hour}:00',
-                                      style: TextStyle(
-                                        fontSize: current ? 9 : 10,
-                                        fontWeight: FontWeight.w900,
-                                        color: current
-                                            ? AppColors.blueDark
-                                            : AppColors.muted,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  '${point.temperature.round()}°',
-                                  style: TextStyle(
-                                    fontSize: current ? 16 : 14,
-                                    fontWeight: FontWeight.w900,
-                                    color: current
-                                        ? AppColors.blueDark
-                                        : AppColors.ink,
-                                  ),
-                                ),
-                                if (point.precipitationProbability > 0)
-                                  Text(
-                                    '${point.precipitationProbability}%',
-                                    style: const TextStyle(
-                                      fontSize: 9,
-                                      color: AppColors.blueDark,
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
+                  child: ListView.builder(
+                    controller: _hourlyController,
+                    scrollDirection: Axis.horizontal,
+                    physics: const _SnapScrollPhysics(
+                      parent: BouncingScrollPhysics(),
                     ),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: (constraints.maxWidth / 2 - 29).clamp(
+                        0.0,
+                        double.infinity,
+                      ),
+                    ),
+                    itemCount: weather.hourly.length,
+                    itemBuilder: (_, i) {
+                      final point = weather.hourly[i];
+                      final current = i == currentIndex;
+                      return SizedBox(
+                        width: 58,
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
+                          margin: const EdgeInsets.symmetric(horizontal: 2),
+                          padding: const EdgeInsets.symmetric(vertical: 3),
+                          decoration: BoxDecoration(
+                            color: current
+                                ? AppColors.blue.withOpacity(.18)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(12),
+                            border: current
+                                ? Border.all(
+                                    color: AppColors.blueDark.withOpacity(.55),
+                                    width: 1.5,
+                                  )
+                                : null,
+                          ),
+                          child: Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    current ? 'JETZT' : '${point.time.hour}:00',
+                                    style: TextStyle(
+                                      fontSize: current ? 9 : 10,
+                                      fontWeight: FontWeight.w900,
+                                      color: current
+                                          ? AppColors.blueDark
+                                          : AppColors.muted,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${point.temperature.round()}°',
+                                style: TextStyle(
+                                  fontSize: current ? 16 : 14,
+                                  fontWeight: FontWeight.w900,
+                                  color: current
+                                      ? AppColors.blueDark
+                                      : AppColors.ink,
+                                ),
+                              ),
+                              if (point.precipitationProbability > 0)
+                                Text(
+                                  '${point.precipitationProbability}%',
+                                  style: const TextStyle(
+                                    fontSize: 9,
+                                    color: AppColors.blueDark,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 );
               },
