@@ -23,6 +23,7 @@ class MetricCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => SizedBox(
     width: 232,
+    height: 190,
     child: GlassCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -104,6 +105,7 @@ class DeviceUsageCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => SizedBox(
     width: 232,
+    height: 190,
     child: GlassCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

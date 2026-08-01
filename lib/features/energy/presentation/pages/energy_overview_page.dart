@@ -112,6 +112,7 @@ class _NoDevicesCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => const SizedBox(
     width: 232,
+    height: 190,
     child: GlassCard(
       child: Text(
         'Keine Geräte mit Energiedaten gefunden.',
