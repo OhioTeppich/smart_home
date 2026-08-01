@@ -97,6 +97,7 @@ class Track17ParcelRepository implements ParcelRepository {
 
     final carrierCode = carrier.track17Code;
     var initialStatus = ParcelStatus.unknown;
+    DateTime? initialEstimatedDelivery;
     if (carrierCode != null) {
       await _remoteDataSource.register(carrierCode, trimmedNumber);
       try {
@@ -109,6 +110,7 @@ class Track17ParcelRepository implements ParcelRepository {
         ]);
         if (statuses.isNotEmpty) {
           initialStatus = statuses.first.toParcelStatus();
+          initialEstimatedDelivery = statuses.first.estimatedDelivery;
         }
       } catch (_) {
         // Registration already succeeded; a failed immediate status fetch
@@ -124,6 +126,7 @@ class Track17ParcelRepository implements ParcelRepository {
       status: initialStatus,
       lastUpdate: now,
       addedAt: now,
+      estimatedDelivery: initialEstimatedDelivery,
       description: (trimmedDescription == null || trimmedDescription.isEmpty)
           ? null
           : trimmedDescription,
@@ -187,6 +190,7 @@ class Track17ParcelRepository implements ParcelRepository {
       _byId[matchId] = _byId[matchId]!.copyWith(
         status: result.toParcelStatus(),
         lastUpdate: now,
+        estimatedDelivery: result.estimatedDelivery,
       );
     }
     unawaited(_persist());

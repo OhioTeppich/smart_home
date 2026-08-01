@@ -22,6 +22,50 @@ void main() {
 
       expect(dto.status, 'NotFound');
       expect(dto.subStatus, isNull);
+      expect(dto.estimatedDelivery, isNull);
+    });
+
+    test('parses estimated_delivery_date, preferring the "to" bound', () {
+      final dto = Track17StatusDto.fromJson({
+        'number': '123456789012',
+        'track_info': {
+          'latest_status': {'status': 'InTransit'},
+          'time_metrics': {
+            'estimated_delivery_date': {
+              'source': 'Official',
+              'from': '2026-08-01T08:00:00+02:00',
+              'to': '2026-08-03T18:00:00+02:00',
+            },
+          },
+        },
+      });
+
+      expect(dto.estimatedDelivery, DateTime.parse('2026-08-03T18:00:00+02:00'));
+    });
+
+    test('falls back to "from" when "to" is missing', () {
+      final dto = Track17StatusDto.fromJson({
+        'number': '123456789012',
+        'track_info': {
+          'latest_status': {'status': 'InTransit'},
+          'time_metrics': {
+            'estimated_delivery_date': {'from': '2026-08-01T08:00:00+02:00'},
+          },
+        },
+      });
+
+      expect(dto.estimatedDelivery, DateTime.parse('2026-08-01T08:00:00+02:00'));
+    });
+
+    test('is null when time_metrics has no estimate yet', () {
+      final dto = Track17StatusDto.fromJson({
+        'number': '123456789012',
+        'track_info': {
+          'latest_status': {'status': 'InfoReceived'},
+        },
+      });
+
+      expect(dto.estimatedDelivery, isNull);
     });
 
     test('maps 17Track statuses to ParcelStatus', () {

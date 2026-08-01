@@ -51,6 +51,13 @@ class ParcelListTile extends StatelessWidget {
                 maxLines: 1,
                 style: const TextStyle(color: AppColors.muted, fontSize: 11),
               ),
+              if (_estimatedDeliveryLabel(parcel) case final label?)
+                Text(
+                  label,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  style: const TextStyle(color: AppColors.muted, fontSize: 11),
+                ),
             ],
           ),
         ),
@@ -79,6 +86,18 @@ class ParcelListTile extends StatelessWidget {
       ],
     ),
   );
+
+  /// `null` once delivered (an ETA no longer means anything) or when 17Track
+  /// hasn't given one for this parcel yet.
+  String? _estimatedDeliveryLabel(Parcel parcel) {
+    final estimatedDelivery = parcel.estimatedDelivery;
+    if (estimatedDelivery == null || parcel.status == ParcelStatus.delivered) {
+      return null;
+    }
+    final day = estimatedDelivery.day.toString().padLeft(2, '0');
+    final month = estimatedDelivery.month.toString().padLeft(2, '0');
+    return 'Vorauss. $day.$month.';
+  }
 
   Color _statusColor(ParcelStatus status) => switch (status) {
     ParcelStatus.unknown => AppColors.muted,
