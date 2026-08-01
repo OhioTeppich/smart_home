@@ -84,7 +84,7 @@ class QuickAccessToggleTile extends StatelessWidget {
   /// to a plain on/off label unless they happen to report energy data too.
   String get _statusLabel {
     if (device.type == SmartHomeDeviceType.plug || device.hasEnergyData) {
-      return '${device.isOn ? device.powerWatts.toStringAsFixed(0) : '0'} W';
+      return '${device.powerWatts.toStringAsFixed(0)} W';
     }
     return device.isOn ? 'Ein' : 'Aus';
   }

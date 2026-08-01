@@ -12,6 +12,29 @@ import '../data_sources/ha_area_alias_mapper.dart';
 import '../data_sources/ha_device_overlay_local_data_source.dart';
 import '../models/ha_entity_state_dto.dart';
 
+/// Result of a Home Assistant entity registry lookup (`config/entity_registry
+/// /list`), which `/api/states` itself does not expose: which entities are
+/// diagnostic/config (hidden from the app) and which entities share a
+/// physical Home Assistant device (`device_id`) with which others — used to
+/// fold a companion power/energy `sensor.*` entity (e.g. a Shelly plug's
+/// separate "Leistung" sensor) into its sibling switch/light/etc. device.
+class _RegistryInfo {
+  const _RegistryInfo({
+    required this.diagnosticEntityIds,
+    required this.siblingsByEntityId,
+  });
+
+  const _RegistryInfo.empty()
+    : diagnosticEntityIds = const {},
+      siblingsByEntityId = const {};
+
+  final Set<String> diagnosticEntityIds;
+
+  /// entityId -> the other entity ids on the same Home Assistant device.
+  /// Only contains entries for entities whose device has 2+ entities.
+  final Map<String, Set<String>> siblingsByEntityId;
+}
+
 /// [config] is fixed for the lifetime of an instance — the composition
 /// root rebuilds this repository (and the `SmartHomeBloc` on top of it)
 /// whenever the Home Assistant connection config changes. `config == null`
@@ -62,54 +85,113 @@ class HomeAssistantSmartHomeRepository implements SmartHomeRepository {
   final _byId = <String, SmartHomeDevice>{};
   StreamController<List<SmartHomeDevice>>? _activeController;
 
-  /// Entity ids whose `entity_category` is `diagnostic` or `config` — Home
-  /// Assistant's own convention for "not a primary device the user cares
-  /// about" (e.g. `sensor.backup_last_successful_backup`,
-  /// `update.home_assistant_core`). Cached for the repository's lifetime;
-  /// left `null` if the registry lookup fails, so a transient error only
-  /// skips this extra filter instead of hard failing the whole device list.
-  /// Retried at most once per [_diagnosticEntityIdsRetryCooldown] — without
-  /// this, a single failure would otherwise be retried on every incoming
-  /// `state_changed` event, each opening a fresh WebSocket connect + auth
-  /// handshake.
-  Set<String>? _diagnosticEntityIdsCache;
+  /// Latest raw state per entity, including companion power/energy sensor
+  /// entities that get folded into a sibling device and therefore never
+  /// appear in [_byId] on their own (see [_isAbsorbedCompanion]) — kept
+  /// around so a live update to just the companion sensor, or just the host,
+  /// can still recompute the merged wattage/energy without waiting for both
+  /// to change together.
+  final _rawById = <String, HaEntityStateDto>{};
+
+  /// Cached for the repository's lifetime; falls back to [_RegistryInfo.
+  /// empty] if the registry lookup fails, so a transient error only skips
+  /// the diagnostic filter and companion-sensor merge instead of hard
+  /// failing the whole device list. Retried at most once per
+  /// [_registryInfoRetryCooldown] — without this, a single failure would
+  /// otherwise be retried on every incoming `state_changed` event, each
+  /// opening a fresh WebSocket connect + auth handshake.
+  _RegistryInfo? _registryInfoCache;
 
   /// When the last registry fetch failed, holds the time of that failure so
-  /// [_diagnosticEntityIds] can wait out [_diagnosticEntityIdsRetryCooldown]
-  /// instead of re-opening a full WebSocket connect + auth handshake on
-  /// every single incoming `state_changed` event.
-  DateTime? _diagnosticEntityIdsFailedAt;
+  /// [_registryInfo] can wait out [_registryInfoRetryCooldown] instead of
+  /// re-opening a full WebSocket connect + auth handshake on every single
+  /// incoming `state_changed` event.
+  DateTime? _registryInfoFailedAt;
 
-  static const _diagnosticEntityIdsRetryCooldown = Duration(seconds: 60);
+  static const _registryInfoRetryCooldown = Duration(seconds: 60);
 
-  Future<Set<String>> _diagnosticEntityIds(HaConnectionConfig config) async {
-    final cached = _diagnosticEntityIdsCache;
+  Future<_RegistryInfo> _registryInfo(HaConnectionConfig config) async {
+    final cached = _registryInfoCache;
     if (cached != null) return cached;
-    final failedAt = _diagnosticEntityIdsFailedAt;
+    final failedAt = _registryInfoFailedAt;
     if (failedAt != null &&
-        DateTime.now().difference(failedAt) < _diagnosticEntityIdsRetryCooldown) {
-      return const {};
+        DateTime.now().difference(failedAt) < _registryInfoRetryCooldown) {
+      return const _RegistryInfo.empty();
     }
     try {
       final entries = await _webSocketClient.fetchEntityRegistry(
         baseUrl: config.baseUrl,
         token: config.token,
       );
-      final ids = entries
-          .where(
-            (entry) =>
-                entry['entity_category'] == 'diagnostic' ||
-                entry['entity_category'] == 'config',
-          )
-          .map((entry) => entry['entity_id'] as String)
-          .toSet();
-      _diagnosticEntityIdsCache = ids;
-      _diagnosticEntityIdsFailedAt = null;
-      return ids;
+      final diagnosticIds = <String>{};
+      final entityIdsByDeviceId = <String, Set<String>>{};
+      for (final entry in entries) {
+        final entityId = entry['entity_id'] as String?;
+        if (entityId == null) continue;
+        if (entry['entity_category'] == 'diagnostic' ||
+            entry['entity_category'] == 'config') {
+          diagnosticIds.add(entityId);
+        }
+        final deviceId = entry['device_id'] as String?;
+        if (deviceId == null) continue;
+        entityIdsByDeviceId.putIfAbsent(deviceId, () => {}).add(entityId);
+      }
+      final siblings = <String, Set<String>>{
+        for (final ids in entityIdsByDeviceId.values)
+          if (ids.length > 1)
+            for (final id in ids) id: {...ids}..remove(id),
+      };
+      final info = _RegistryInfo(
+        diagnosticEntityIds: diagnosticIds,
+        siblingsByEntityId: siblings,
+      );
+      _registryInfoCache = info;
+      _registryInfoFailedAt = null;
+      return info;
     } catch (_) {
-      _diagnosticEntityIdsFailedAt = DateTime.now();
-      return const {};
+      _registryInfoFailedAt = DateTime.now();
+      return const _RegistryInfo.empty();
     }
+  }
+
+  /// A companion power/energy sensor (see [HaEntityStateDto.isPowerSensor]/
+  /// [HaEntityStateDto.isEnergySensor]) is folded into a sibling device
+  /// instead of being shown as its own tile whenever that sibling is known
+  /// and isn't itself a plain sensor (i.e. there's an actual switch/light/
+  /// etc. to fold it into).
+  bool _isAbsorbedCompanion(HaEntityStateDto dto, _RegistryInfo registry) {
+    if (!dto.isPowerSensor && !dto.isEnergySensor) return false;
+    final siblingIds = registry.siblingsByEntityId[dto.entityId] ?? const {};
+    return siblingIds.any((id) {
+      final siblingDomain = _rawById[id]?.domain;
+      return siblingDomain != null && siblingDomain != 'sensor';
+    });
+  }
+
+  /// Builds the domain [SmartHomeDevice] for [dto], folding in a sibling
+  /// power/energy sensor's reading (looked up in [_rawById]) whenever [dto]
+  /// reports none of its own.
+  SmartHomeDevice _buildDevice(
+    HaEntityStateDto dto,
+    _RegistryInfo registry,
+    HaDeviceOverlay? overlay,
+  ) {
+    final siblingIds = registry.siblingsByEntityId[dto.entityId] ?? const {};
+    HaEntityStateDto? powerSensor;
+    HaEntityStateDto? energySensor;
+    for (final id in siblingIds) {
+      final sibling = _rawById[id];
+      if (sibling == null) continue;
+      if (sibling.isPowerSensor) powerSensor = sibling;
+      if (sibling.isEnergySensor) energySensor = sibling;
+    }
+    return _applyOverlay(
+      dto,
+      overlay,
+      companionPowerWatts: powerSensor?.ownPowerWatts,
+      companionDailyKwh: energySensor?.ownDailyKwh,
+      companionDailyKwhIsCumulative: energySensor?.ownDailyKwhIsCumulative ?? false,
+    );
   }
 
   @override
@@ -117,19 +199,25 @@ class HomeAssistantSmartHomeRepository implements SmartHomeRepository {
     final config = _config;
     if (config == null) return const [];
     try {
+      final registry = await _registryInfo(config);
       final states = await _restClient.fetchStates(
         baseUrl: config.baseUrl,
         token: config.token,
       );
-      final diagnosticIds = await _diagnosticEntityIds(config);
       final overlays = await _overlayDataSource.readAll();
-      return states
+      final dtos = states
           .where((json) {
             final id = json['entity_id'] as String;
-            return _isDomainSupported(id) && !diagnosticIds.contains(id);
+            return _isDomainSupported(id) && !registry.diagnosticEntityIds.contains(id);
           })
           .map(HaEntityStateDto.fromJson)
-          .map((dto) => _applyOverlay(dto, overlays[dto.entityId]))
+          .toList();
+      for (final dto in dtos) {
+        _rawById[dto.entityId] = dto;
+      }
+      return dtos
+          .where((dto) => !_isAbsorbedCompanion(dto, registry))
+          .map((dto) => _buildDevice(dto, registry, overlays[dto.entityId]))
           .toList();
     } on HaAuthException {
       throw const SmartHomeUnauthorizedFailure();
@@ -167,6 +255,7 @@ class HomeAssistantSmartHomeRepository implements SmartHomeRepository {
 
     try {
       _byId.clear();
+      _rawById.clear();
       for (final device in await fetchDevices()) {
         _byId[device.id] = device;
       }
@@ -192,13 +281,25 @@ class HomeAssistantSmartHomeRepository implements SmartHomeRepository {
             final newState = data is Map ? data['new_state'] : null;
             if (entityId == null || newState is! Map<String, dynamic>) return;
             if (!_isDomainSupported(entityId)) return;
-            final diagnosticIds = await _diagnosticEntityIds(config);
-            if (diagnosticIds.contains(entityId)) return;
+            final registry = await _registryInfo(config);
+            if (registry.diagnosticEntityIds.contains(entityId)) return;
+            final dto = HaEntityStateDto.fromJson(newState);
+            _rawById[entityId] = dto;
             final overlays = await _overlayDataSource.readAll();
-            _byId[entityId] = _applyOverlay(
-              HaEntityStateDto.fromJson(newState),
-              overlays[entityId],
-            );
+
+            if (_isAbsorbedCompanion(dto, registry)) {
+              // Folded into a sibling device, never shown on its own —
+              // refresh whichever host sibling(s) are already known so the
+              // merged wattage/energy picks up this reading right away.
+              _byId.remove(entityId);
+              for (final siblingId in registry.siblingsByEntityId[entityId] ?? const {}) {
+                final siblingDto = _rawById[siblingId];
+                if (siblingDto == null || siblingDto.domain == 'sensor') continue;
+                _byId[siblingId] = _buildDevice(siblingDto, registry, overlays[siblingId]);
+              }
+            } else {
+              _byId[entityId] = _buildDevice(dto, registry, overlays[entityId]);
+            }
             if (!controller.isClosed) controller.add(_byId.values.toList());
           },
           onError: (Object error) {
@@ -221,7 +322,13 @@ class HomeAssistantSmartHomeRepository implements SmartHomeRepository {
     }
   }
 
-  SmartHomeDevice _applyOverlay(HaEntityStateDto dto, HaDeviceOverlay? overlay) {
+  SmartHomeDevice _applyOverlay(
+    HaEntityStateDto dto,
+    HaDeviceOverlay? overlay, {
+    double? companionPowerWatts,
+    double? companionDailyKwh,
+    bool companionDailyKwhIsCumulative = false,
+  }) {
     final heuristicRoomId = _areaAliasMapper.match(
       entityId: dto.entityId,
       friendlyName: dto.attributes['friendly_name'] as String?,
@@ -229,7 +336,12 @@ class HomeAssistantSmartHomeRepository implements SmartHomeRepository {
     final roomId = (overlay?.hasRoomOverride ?? false)
         ? overlay!.roomId
         : heuristicRoomId;
-    var device = dto.toDomain(roomId: roomId);
+    var device = dto.toDomain(
+      roomId: roomId,
+      companionPowerWatts: companionPowerWatts,
+      companionDailyKwh: companionDailyKwh,
+      companionDailyKwhIsCumulative: companionDailyKwhIsCumulative,
+    );
     if (overlay?.x != null && overlay?.y != null) {
       device = device.placeAt(overlay!.x!, overlay.y!);
     }
