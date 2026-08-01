@@ -79,11 +79,11 @@ class QuickAccessToggleTile extends StatelessWidget {
     ),
   );
 
-  /// Watt draw when Home Assistant reports energy data for this device
-  /// (mainly `plug`s, e.g. Shelly sockets) — falls back to a plain on/off
-  /// label otherwise, since not every toggleable device has a power sensor.
+  /// Steckdosen always show current wattage (even `0 W` off/idle) since
+  /// that's their whole point on this card; other toggle types fall back
+  /// to a plain on/off label unless they happen to report energy data too.
   String get _statusLabel {
-    if (device.hasEnergyData) {
+    if (device.type == SmartHomeDeviceType.plug || device.hasEnergyData) {
       return '${device.isOn ? device.powerWatts.toStringAsFixed(0) : '0'} W';
     }
     return device.isOn ? 'Ein' : 'Aus';
